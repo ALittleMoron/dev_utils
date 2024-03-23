@@ -119,43 +119,35 @@ exclude = ['tests']
 [tool.bandit.assert_used]
 skips = ['*_test.py', '*/test_*.py']
 
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.3.4",
+    "vulture>=2.11",
+    "pytest>=8.1.1",
+    "black>=24.3.0",
+    "bandit>=1.7.8",
+    "coverage>=7.4.4",
+    "pytest-cov>=4.1.0",
+    "isort>=5.13.2",
+    "pyright>=1.1.355",
+    "freezegun>=1.4.0",
+    "mimesis>=15.1.0",
+]
 
-[tool.poetry]
-name = "dev-utils"
+
+[project]
+name = "dev_utils"
 version = "0.1.0"
-description = ""
-authors = ["Dmitriy Lunev"]
+description = "My project utils package, that I use in my projects."
+authors = []
+requires-python = ">=3.11"
 readme = "README.md"
+license = { text = "MIT" }
 
-[tool.poetry.dependencies]
-python = "^3.11"
-sqlalchemy = { version = "^2.0.24", optional = true }
-fastapi = { version = "^0.110.0", optional = true }
-yappi = { version = "^1.6.0", optional = true }
-abstractcp = { version = "^0.9.9", optional = true }
-
-
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.1.9"
-vulture = "^2.10"
-pytest = "^7.4.3"
-black = "^23.12.1"
-bandit = "^1.7.6"
-coverage = "^7.4.0"
-pytest-cov = "^4.1.0"
-isort = "^5.13.2"
-pyright = "^1.1.343"
-freezegun = "^1.4.0"
-mimesis = "^15.1.0"
-psycopg2-binary = "^2.9.9"
-asyncpg = "^0.29.0"
-
-
-[tool.poetry.extras]
-profiling = ["fastapi", "yappi", "sqlalchemy"]
-sqlalchemy_filters = ["sqlalchemy", "abstractcp"]
-
+[project.optional-dependencies]
+profiling = ["fastapi>=0.110.0", "yappi>=1.6.0", "sqlalchemy>=2.0.28"]
+sqlalchemy_filters = ["sqlalchemy>=2.0.28", "abstractcp>=0.9.9"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

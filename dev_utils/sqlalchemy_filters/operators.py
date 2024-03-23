@@ -1,4 +1,5 @@
 """"""
+
 import datetime
 from typing import TYPE_CHECKING, Any, TypeVar
 
@@ -72,7 +73,7 @@ def django_exact(
     b: Any,  # noqa: ANN401
 ) -> 'ColumnElement[bool]':
     """"""
-    if b is None:
+    if b is None or isinstance(b, bool):
         return a.is_(None)
     return a == b
 
@@ -82,7 +83,7 @@ def django_iexact(
     b: Any,  # noqa
 ) -> 'ColumnElement[bool]':
     """"""
-    if b is None:
+    if b is None or isinstance(b, bool):
         return a.is_(None)
     if isinstance(b, str):
         return a.ilike(b)

@@ -1,5 +1,5 @@
 NAME := dev_utils
-POETRY := $(shell command -v poetry 2> /dev/null)
+PDM := $(shell command -v pdm 2> /dev/null)
 
 .DEFAULT_GOAL := help
 
@@ -21,14 +21,14 @@ help:
 
 .PHONY: install
 install:
-	@if [ -z $(POETRY) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
-	$(POETRY) install
+	@if [ -z $(PDM) ]; then echo "PDM could not be found."; exit 2; fi
+	$(PDM) install
 
 
 .PHONY: shell
 shell:
-	@if [ -z $(POETRY) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
-	$(ENV_VARS_PREFIX) $(POETRY) run ipython --no-confirm-exit --no-banner --quick \
+	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
+	$(ENV_VARS_PREFIX) $(PDM) run ipython --no-confirm-exit --no-banner --quick \
 	--InteractiveShellApp.extensions="autoreload" \
 	--InteractiveShellApp.exec_lines="%autoreload 2" \
 	--InteractiveShellApp.exec_lines="import sys, pathlib, os" \
@@ -44,27 +44,27 @@ clean:
 
 .PHONY: lint
 lint:
-	@if [ -z $(POETRY) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
-	$(POETRY) run pyright $(NAME)
-	$(POETRY) run isort --settings-path ./pyproject.toml --check-only $(NAME)
-	$(POETRY) run black --config ./pyproject.toml --check $(NAME) --diff
-	$(POETRY) run ruff check $(NAME)
-	$(POETRY) run vulture $(NAME) --min-confidence 100
-	$(POETRY) run bandit --configfile ./pyproject.toml -r ./$(NAME)/app
+	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
+	$(PDM) run pyright $(NAME)
+	$(PDM) run isort --settings-path ./pyproject.toml --check-only $(NAME)
+	$(PDM) run black --config ./pyproject.toml --check $(NAME) --diff
+	$(PDM) run ruff check $(NAME)
+	$(PDM) run vulture $(NAME) --min-confidence 100
+	$(PDM) run bandit --configfile ./pyproject.toml -r ./$(NAME)/app
 
 .PHONY: format
 format:
-	@if [ -z $(POETRY) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
-	$(POETRY) run isort --settings-path ./pyproject.toml $(NAME)
-	$(POETRY) run black --config ./pyproject.toml $(NAME)
+	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
+	$(PDM) run isort --settings-path ./pyproject.toml $(NAME)
+	$(PDM) run black --config ./pyproject.toml $(NAME)
 
 .PHONY: test
 test:
-	@if [ -z $(POETRY) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
-	$(POETRY) run pytest ./tests --cov-report xml --cov-fail-under 60 --cov ./$(NAME) -v
+	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
+	$(PDM) run pytest ./tests --cov-report xml --cov-fail-under 60 --cov ./$(NAME) -v
 
 
 .PHONY: test_docker
 test_docker:
-	@if [ -z $(POETRY) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
+	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
 	$(ENV_VARS_PREFIX) docker-compose -f docker/docker-compose-test.yaml up --build

@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from dev_utils.sqlalchemy_filters import guards
+from dev_utils.sqlalchemy_filters import converters, guards
 
 any_value = object()
 
@@ -34,3 +34,15 @@ def test_all_dict_keys_are_str(_dct: dict[Any, Any], expected_result: bool) -> N
 )
 def test_is_dict_simple_filter_dict(_dct: dict[Any, Any], expected_result: bool) -> None:  # noqa
     assert guards.is_dict_simple_filter_dict(_dct) == expected_result
+
+
+@pytest.mark.parametrize(
+    ('_dct', 'expected_result'),
+    [
+        (converters.SimpleFilterConverter.lookup_mapping, False),
+        (converters.AdvancedOperatorFilterConverter.lookup_mapping, False),
+        (converters.DjangoLikeFilterConverter.lookup_mapping, True),
+    ],
+)
+def test_has_nested_lookups(_dct: dict[Any, Any], expected_result: bool) -> None:  # noqa
+    assert guards.has_nested_lookups(_dct) == expected_result

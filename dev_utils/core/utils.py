@@ -2,10 +2,9 @@
 
 import datetime
 import types
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable, TypeGuard, TypeVar
-
 import zoneinfo
+from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar
+
 from sqlalchemy import Delete, Insert, Select, Table, Update, inspect
 from sqlalchemy.ext.hybrid import HybridExtensionType
 from sqlalchemy.orm import DeclarativeBase, joinedload
@@ -18,6 +17,8 @@ from dev_utils.core.exc import (
 from dev_utils.core.logging import logger
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
     from sqlalchemy.orm import Mapper, QueryableAttribute
     from sqlalchemy.orm.base import InspectionAttr
     from sqlalchemy.orm.clsregistry import _ClsRegistryType  # type: ignore
@@ -100,7 +101,7 @@ def get_sqlalchemy_attribute(
     return sqlalchemy_field
 
 
-def get_model_classes_from_statement(stmt: Statement) -> Sequence[type['DeclarativeBase']]:
+def get_model_classes_from_statement(stmt: Statement) -> 'Sequence[type[DeclarativeBase]]':
     """Get sqlalchemy model classes from given statement.
 
     Args
@@ -331,7 +332,7 @@ def is_hybrid_method(orm_descriptor: "InspectionAttr") -> bool:
 def apply_loads(
     stmt: "T",
     *relationship_names: str,
-    load_strategy: Callable[[Any], '_AbstractLoad'] = joinedload,
+    load_strategy: 'Callable[[Any], _AbstractLoad]' = joinedload,
 ) -> "T":
     """Apply loads from string.
 
@@ -423,4 +424,5 @@ def apply_joins(
             isouter=left_outer_join,
             full=full_join,
         )
+    return stmt
     return stmt

@@ -16,7 +16,9 @@ from tests.utils import MyModel
 
 now = datetime.datetime.now(tz=zoneinfo.ZoneInfo('UTC'))
 _date = now.date()
+_date_future = now.date() + datetime.timedelta(days=1)
 _time = now.time()
+_time_future = (now + datetime.timedelta(hours=1)).time()
 
 
 @pytest.mark.parametrize(

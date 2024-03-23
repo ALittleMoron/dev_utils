@@ -1,14 +1,15 @@
 import datetime
 import random
-from typing import TYPE_CHECKING, Any, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from sqlalchemy import ForeignKey, inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy_utils import create_database, database_exists, drop_database  # type: ignore
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from sqlalchemy.ext.asyncio import AsyncSession
     from sqlalchemy.orm import Session
 
@@ -19,18 +20,6 @@ T = TypeVar('T')
 def coin_flip() -> bool:
     """Coin flip: True or False."""
     return bool(random.getrandbits(1))
-
-
-def create_db(uri: str) -> None:
-    """Drop the database at ``uri`` and create a brand new one."""
-    destroy_db(uri)
-    create_database(uri)
-
-
-def destroy_db(uri: str) -> None:
-    """Destroy the database at ``uri``, if it exists."""
-    if database_exists(uri):
-        drop_database(uri)
 
 
 def generate_datetime_list(*, n: int = 10, tz: Any = None) -> list[datetime.datetime]:  # noqa
@@ -66,14 +55,15 @@ def assert_compare_db_items(item1: 'DeclarativeBase', item2: 'DeclarativeBase') 
 
 
 def assert_compare_db_item_list(
-    items1: Sequence['DeclarativeBase'],
-    items2: Sequence['DeclarativeBase'],
+    items1: 'Sequence[DeclarativeBase]',
+    items2: 'Sequence[DeclarativeBase]',
 ) -> None:
     """Assert if 2 model lists not compare to each other."""
     assert len(items1) == len(items2), f'Different lists count: {len(items1)} != {len(items2)}'
     for item1, item2 in zip(
         sorted(items1, key=lambda x: x.id),  # type: ignore
         sorted(items2, key=lambda x: x.id),  # type: ignore
+        strict=True,
     ):
         assert_compare_db_items(item1, item2)
 
@@ -100,7 +90,7 @@ def assert_compare_db_item_with_dict(
 
 
 def assert_compare_db_item_list_with_dict(
-    items: Sequence['DeclarativeBase'],
+    items: 'Sequence[DeclarativeBase]',
     data: dict[str, Any],
     *,
     skip_keys_check: bool = False,
@@ -134,7 +124,7 @@ def assert_compare_db_item_none_fields(item: 'DeclarativeBase', none_fields: set
 
 
 def assert_compare_db_item_list_none_fields(
-    items: Sequence['DeclarativeBase'],
+    items: 'Sequence[DeclarativeBase]',
     none_fields: set[str],
 ) -> None:
     """Assert compare list of model instances fields for none value."""
