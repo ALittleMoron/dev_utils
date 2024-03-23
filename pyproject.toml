@@ -1,0 +1,161 @@
+[tool.ruff]
+select = [
+    "A",
+    "B",
+    "D",
+    "E",
+    "F",
+    "G",
+    "N",
+    "Q",
+    "S",
+    "C90",
+    "UP",
+    "ANN",
+    "ASYNC",
+    "FBT",
+    "COM",
+    "COM",
+    "DTZ",
+    "DJ",
+    "EM",
+    "ICN",
+    "PIE",
+    "T20",
+    "PYI",
+    "PT",
+    "SIM",
+    "TCH",
+    "INT",
+    "PTH",
+    "ERA",
+    "TRY",
+]
+line-length = 100
+show-source = true
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    ".eggs",
+    "*.egg",
+    "dist",
+    "tests/fixtures/**",
+    "tests/**/snapshots/**",
+    "alembic",
+    "airich",
+]
+ignore = ["D100", "B008", "D104", "Q000", "S101", "PT016", "ANN101", "ANN102"]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+ignore-decorators = ["typing.overload"]
+
+[tool.ruff.mccabe]
+max-complexity = 11
+
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
+
+[tool.ruff.extend-per-file-ignores]
+"__init__.py" = ["F401"]
+"*/migrations/versions/*" = ["D103"]
+"src/app/main.py" = ["E402"]
+"src/cli/commands/*" = ["E402", "ANN201"]
+"src/cli/__init__.py" = ["E402", "ANN201", "FBT001", "FBT002", "UP007"]
+"manage.py" = ["E402"]
+"tests/*" = ["D103"]
+
+
+[tool.black]
+line-length = 100
+skip-string-normalization = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+
+[tool.coverage]
+[tool.coverage.run]
+source = ["sqlrepo"]
+branch = true
+omit = ['']
+
+[tool.coverage.report]
+exclude_lines = [
+    "enum.Enum",
+    "# noqa",
+    "# pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if typing.TYPE_CHECKING:",
+    "@overload",
+]
+
+[tool.pytest]
+testpath = "tests"
+
+
+[tool.bandit]
+exclude = ['tests']
+
+[tool.bandit.assert_used]
+skips = ['*_test.py', '*/test_*.py']
+
+
+[tool.poetry]
+name = "dev-utils"
+version = "0.1.0"
+description = ""
+authors = ["Dmitriy Lunev"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sqlalchemy = { version = "^2.0.24", optional = true }
+fastapi = { version = "^0.110.0", optional = true }
+yappi = { version = "^1.6.0", optional = true }
+abstractcp = { version = "^0.9.9", optional = true }
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.9"
+vulture = "^2.10"
+pytest = "^7.4.3"
+black = "^23.12.1"
+bandit = "^1.7.6"
+coverage = "^7.4.0"
+pytest-cov = "^4.1.0"
+isort = "^5.13.2"
+pyright = "^1.1.343"
+freezegun = "^1.4.0"
+mimesis = "^15.1.0"
+psycopg2-binary = "^2.9.9"
+asyncpg = "^0.29.0"
+
+
+[tool.poetry.extras]
+profiling = ["fastapi", "yappi", "sqlalchemy"]
+sqlalchemy_filters = ["sqlalchemy", "abstractcp"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
