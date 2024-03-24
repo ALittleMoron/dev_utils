@@ -1,7 +1,7 @@
 """"""
 
 import datetime
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 from sqlalchemy import Date, Time, cast, extract, false, func
 from sqlalchemy.orm import QueryableAttribute
@@ -12,6 +12,17 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.elements import ColumnElement
 
     T = TypeVar('T')
+
+
+class OperatorFunctionProtocol(Protocol):  # noqa: D101
+    def __call__(  # noqa: D102
+        self,
+        a: Any,  # noqa: ANN401
+        b: Any,  # noqa: ANN401
+        *,
+        subproduct_use: bool = False,
+    ) -> Any:  # noqa: ANN401
+        ...
 
 
 # =================================================================
@@ -169,104 +180,156 @@ def django_range(
 def django_date(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: datetime.date,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return cast(a, Date)
     return cast(a, Date) == b
 
 
 def django_year(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('year', a)
     return extract('year', a) == b
 
 
 def django_iso_year(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('isoyear', a)
     return extract('isoyear', a) == b
 
 
 def django_month(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('month', a)
     return extract('month', a) == b
 
 
 def django_day(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('day', a)
     return extract('day', a) == b
 
 
 def django_week(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('week', a)
     return extract('week', a) == b
 
 
 def django_week_day(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('dow', a)
     return extract('dow', a) == b
 
 
 def django_iso_week_day(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('isodow', a)
     return extract('isodow', a) == b
 
 
 def django_quarter(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int | str,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('quarter', a)
     return extract('quarter', a) == b
 
 
 def django_time(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: datetime.time,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return cast(a, Time)
     return cast(a, Time) == b
 
 
 def django_hour(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('hour', a)
     return extract('hour', a) == b
 
 
 def django_minute(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('minute', a)
     return extract('minute', a) == b
 
 
 def django_second(
     a: QueryableAttribute[Any],  # noqa: ANN401
     b: int,
-) -> 'ColumnElement[bool]':
+    *,
+    subproduct_use: bool = False,
+) -> 'ColumnElement[Any]':
     """"""
+    if subproduct_use:
+        return extract('second', a)
     return extract('second', a) == b
 
 

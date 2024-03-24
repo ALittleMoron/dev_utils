@@ -1,7 +1,8 @@
 import enum
 import operator as builtin_operator
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
+from inspect import signature
 from typing import TYPE_CHECKING, Any, final
 
 from abstractcp import Abstract, abstract_class_property
@@ -20,7 +21,7 @@ IsValid = bool
 Message = str
 FilterDict = dict[str, Any]
 SQLAlchemyFilter = ColumnElement[bool]
-OperatorFunction = Callable[[Any, Any], SQLAlchemyFilter]
+OperatorFunction = custom_operator.OperatorFunctionProtocol
 NestedFilterNames = set[str]
 LookupMapping = dict[enum.Enum | str, OperatorFunction]
 LookupMappingWithNested = dict[enum.Enum | str, tuple[OperatorFunction, NestedFilterNames]]
@@ -37,6 +38,20 @@ django_nested_filter_names: NestedFilterNames = {
     'lte',
     'range',
 }
+
+
+def eval_operator_function(  # noqa: ANN201
+    func: OperatorFunction,
+    a: Any,  # noqa: ANN401
+    b: Any,  # noqa: ANN401
+    subproduct_use: bool = False,  # noqa: FBT001, FBT002
+):
+    """"""
+    function_signature = signature(func)
+    if function_signature.parameters.get('subproduct_use'):
+        return func(a, b, subproduct_use=subproduct_use)
+    # function has no subproduct_use param.
+    return func(a, b)
 
 
 class BaseFilterConverter(ABC, Abstract):
@@ -99,13 +114,20 @@ class BaseFilterConverter(ABC, Abstract):
         rest_lookups: list[str] | None = None,
     ) -> SQLAlchemyFilter:
         sqlalchemy_field = get_sqlalchemy_attribute(model, field_name)
-        if not has_nested_lookups(cls.lookup_mapping):
+        if not has_nested_lookups(cls.lookup_mapping) or not rest_lookups:
             operator_func = cls.lookup_mapping[parent_lookup]
+            if isinstance(operator_func, tuple):
+                operator_func, *_ = operator_func
             return operator_func(sqlalchemy_field, value)  # type: ignore
         operator_func, nested_filter_names = cls.lookup_mapping[parent_lookup]
-        # FIXME: поменять на промежуточные функции, чтобы только последняя функция делала корректный запрос.
-        filter_subproduct = operator_func(sqlalchemy_field, value)
-        for rest_lookup in rest_lookups or []:
+        filter_subproduct = eval_operator_function(
+            operator_func,
+            sqlalchemy_field,
+            value,
+            subproduct_use=bool(rest_lookups),
+        )
+        final_lookup = rest_lookups[-1]
+        for rest_lookup in rest_lookups[:-1]:
             if rest_lookup not in nested_filter_names:
                 msg = (
                     f'lookup "{rest_lookup}" is not supported for parent lookup "{parent_lookup}".'
@@ -113,8 +135,19 @@ class BaseFilterConverter(ABC, Abstract):
                 raise FilterError(msg)
             parent_lookup = rest_lookup
             operator_func, nested_filter_names = cls.lookup_mapping[parent_lookup]
-            filter_subproduct = operator_func(sqlalchemy_field, value)
-        return filter_subproduct
+            filter_subproduct = eval_operator_function(
+                operator_func,
+                sqlalchemy_field,
+                filter_subproduct,
+                subproduct_use=True,
+            )
+        operator_func, _ = cls.lookup_mapping[final_lookup]
+        return eval_operator_function(
+            operator_func,
+            filter_subproduct,
+            value,
+            subproduct_use=False,
+        )
 
 
 class SimpleFilterConverter(BaseFilterConverter):
@@ -151,6 +184,8 @@ class SimpleFilterConverter(BaseFilterConverter):
 
 
 class AdvancedOperatorFilterConverter(BaseFilterConverter):
+    """"""
+
     lookup_mapping: LookupMapping = {  # type: ignore
         '==': builtin_operator.eq,
         '>': builtin_operator.gt,
@@ -194,12 +229,14 @@ class AdvancedOperatorFilterConverter(BaseFilterConverter):
 
 
 class DjangoLikeFilterConverter(BaseFilterConverter):
+    """"""
+
     lookup_mapping: LookupMappingWithNested = {  # type: ignore
         'exact': (custom_operator.django_exact, empty_nested_filter_names),
         'iexact': (custom_operator.django_iexact, empty_nested_filter_names),
         'contains': (custom_operator.django_contains, empty_nested_filter_names),
         'icontains': (custom_operator.django_icontains, empty_nested_filter_names),
-        'in': (custom_operator.contains, empty_nested_filter_names),
+        'in': (custom_operator.django_in, empty_nested_filter_names),
         'gt': (builtin_operator.gt, empty_nested_filter_names),
         'gte': (builtin_operator.ge, empty_nested_filter_names),
         'lt': (builtin_operator.lt, empty_nested_filter_names),
@@ -225,11 +262,6 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
         'isnull': (custom_operator.django_isnull, empty_nested_filter_names),
         'regex': (custom_operator.django_regex, empty_nested_filter_names),
         'iregex': (custom_operator.django_iregex, empty_nested_filter_names),
-        # FIXME: добавить функцию, которая будет вычисляться в промежуточных проверках.
-        # TODO: добавить sub-lookups, по типу year__gre, time__range и т.д.
-        # NOTE: можно добавить параметр suboperator, который по умолчанию будет ==.
-        #       и далее можно переиспользовать эти все функции.
-        # NOTE: либо можно доработать _convert_filter для разделения нескольких частей фильтра.
     }
 
     @classmethod
@@ -255,6 +287,7 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
                     'field__hour__gt=12 or something like this)'
                 )
                 raise FilterError(msg)
+            # FIXME: add validation for value for lookup (like, no integer for field__date filter)
             if field_name not in get_valid_field_names(model):
                 return False, f'Model or select statement {model} has no field "{field_name}".'
             if lookup not in cls.lookup_mapping:
