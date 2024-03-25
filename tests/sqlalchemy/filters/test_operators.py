@@ -17,7 +17,7 @@ from sqlalchemy import (
     func,
 )
 
-from dev_utils.sqlalchemy_filters import operators
+from dev_utils.sqlalchemy.filters import operators
 
 metadata = MetaData()
 table = Table(

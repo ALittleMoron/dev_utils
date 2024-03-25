@@ -1,6 +1,9 @@
-from typing import Any, Literal, TypedDict, get_args
+"""Types module.
 
-from typing_extensions import NotRequired
+Contains types and structures, represents its types.
+"""
+
+from typing import Any, Literal, NotRequired, TypedDict, get_args
 
 DjangoOperatorsLiteral = Literal[
     'exact',
@@ -35,7 +38,7 @@ DjangoOperatorsLiteral = Literal[
     'iregex',
 ]
 DjangoOperatorsSet: set[DjangoOperatorsLiteral] = set(get_args(DjangoOperatorsLiteral))
-AdvancedOperatorsLiteral = Literal['==', '>', '<', '>=', '<=', 'between', 'contains']
+AdvancedOperatorsLiteral = Literal['=', '>', '<', '>=', '<=', 'between', 'contains']
 AdvancedOperatorsSet: set[AdvancedOperatorsLiteral] = set(get_args(AdvancedOperatorsLiteral))
 FilterConverterStrategiesLiteral = Literal['simple', 'advanced', 'django']
 FilterConverterStrategiesSet: set[FilterConverterStrategiesLiteral] = set(

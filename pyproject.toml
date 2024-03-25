@@ -101,7 +101,7 @@ omit = ['']
 [tool.coverage.report]
 exclude_lines = [
     "enum.Enum",
-    "# noqa",
+    "(Protocol)",
     "# pragma: no cover",
     "raise NotImplementedError",
     "if TYPE_CHECKING:",

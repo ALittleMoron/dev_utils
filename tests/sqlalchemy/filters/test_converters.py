@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import Date, Time, cast, extract, func
 
 from dev_utils.core.exc import FilterError
-from dev_utils.sqlalchemy_filters import (
+from dev_utils.sqlalchemy import (
     AdvancedOperatorFilterConverter,
     BaseFilterConverter,
     DjangoLikeFilterConverter,
@@ -57,7 +57,7 @@ _time_future = (now + datetime.timedelta(hours=1)).time()
         (
             AdvancedOperatorFilterConverter,
             [
-                {'field': 'id', 'value': 25, 'operator': '=='},
+                {'field': 'id', 'value': 25, 'operator': '='},
                 {'field': 'id', 'value': 25, 'operator': '>'},
                 {'field': 'id', 'value': 25, 'operator': '>='},
                 {'field': 'id', 'value': 25, 'operator': '<'},

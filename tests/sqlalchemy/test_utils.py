@@ -8,8 +8,8 @@ from freezegun import freeze_time
 from sqlalchemy import delete, func, insert, inspect, select, update
 from sqlalchemy.orm import DeclarativeBase, joinedload, selectinload, subqueryload
 
-from dev_utils.core import utils
 from dev_utils.core.exc import NoModelAttributeError, NoModelRelationshipError
+from dev_utils.sqlalchemy import utils
 from tests.utils import Base, MyModel, OtherModel, generate_datetime_list
 
 

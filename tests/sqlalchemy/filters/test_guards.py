@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from dev_utils.sqlalchemy_filters import converters, guards
+from dev_utils.sqlalchemy.filters import converters, guards
 
 any_value = object()
 

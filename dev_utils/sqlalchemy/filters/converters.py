@@ -9,9 +9,9 @@ from abstractcp import Abstract, abstract_class_property
 from sqlalchemy.sql.elements import ColumnElement
 
 from dev_utils.core.exc import FilterError
-from dev_utils.core.utils import get_sqlalchemy_attribute, get_valid_field_names
-from dev_utils.sqlalchemy_filters import operators as custom_operator
-from dev_utils.sqlalchemy_filters.guards import has_nested_lookups, is_dict_simple_filter_dict
+from dev_utils.sqlalchemy.filters import operators as custom_operator
+from dev_utils.sqlalchemy.filters.guards import has_nested_lookups, is_dict_simple_filter_dict
+from dev_utils.sqlalchemy.utils import get_sqlalchemy_attribute, get_valid_field_names
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import DeclarativeBase
@@ -66,6 +66,23 @@ class BaseFilterConverter(ABC, Abstract):
         model: type["DeclarativeBase"],
         filter_: FilterDict,
     ) -> tuple[IsValid, Message]:
+        """Check, if passed filter is valid or not.
+
+        Parameters
+        ----------
+        model : DeclarativeBase
+            any declarative model. Table objects not supported.
+        filter : FilterDict
+            any dict with keys as strings. Can has any structure, depends on your implementation.
+
+        Returns
+        -------
+        IsValid : bool
+            Validation flag.
+        Message: str
+            Validation message. It will be passed to FilterError, if IsValid will be False. For
+            IsValid equals True you may pass empty string (``""``).
+        """
         raise NotImplementedError
 
     @classmethod
@@ -75,6 +92,20 @@ class BaseFilterConverter(ABC, Abstract):
         model: type["DeclarativeBase"],
         filter_: FilterDict,
     ) -> Sequence[SQLAlchemyFilter]:
+        """Convert given filter dict to SQLAlchemy filter.
+
+        Parameters
+        ----------
+        model : DeclarativeBase
+            any declarative model. Table objects not supported.
+        filter : FilterDict
+            any dict with keys as strings. Can has any structure, depends on your implementation.
+
+        Returns
+        -------
+        Sequence[SQLAlchemyFilter]
+            any sequence of ColumnElement[bool].
+        """
         raise NotImplementedError
 
     @classmethod
@@ -86,7 +117,30 @@ class BaseFilterConverter(ABC, Abstract):
             FilterDict | ColumnElement[bool] | Sequence[FilterDict | ColumnElement[bool]] | None
         ) = None,
     ) -> Sequence[SQLAlchemyFilter]:
-        """Convert input dict or list of dicts to SQLAlchemy filter."""
+        """Convert input dict or list of dicts to SQLAlchemy filter.
+
+        Depends on abstract class methods ``_is_filter_valid`` and ``_convert_filter``. Implement
+        them to make your own FilterConverter class works correct.
+
+        Final implementation. Not override it.
+
+        Usage:
+
+        ```
+        from sqlalchemy import select
+
+        from your_models import YourModel
+        from your_db import Session
+
+        your_filter_dicts = [{...}, {...}]
+        filters = SomeFilterConverter.convert(YourModel, your_filter_dicts)
+
+        with Session() as session:
+            stmt = select(YourModel).where(*filters)
+            result = session.scalars(stmt).all()
+            # your other code here.
+        ```
+        """
         result: Sequence[SQLAlchemyFilter] = []
         if filters is None:
             return result
@@ -113,6 +167,10 @@ class BaseFilterConverter(ABC, Abstract):
         value: Any,  # noqa: ANN401
         rest_lookups: list[str] | None = None,
     ) -> SQLAlchemyFilter:
+        """Apply operator to SQLAlchemy field and value.
+
+        Iterate through all passed lookups and evaluate operator, represents passed lookups.
+        """
         sqlalchemy_field = get_sqlalchemy_attribute(model, field_name)
         if not has_nested_lookups(cls.lookup_mapping) or not rest_lookups:
             operator_func = cls.lookup_mapping[parent_lookup]
@@ -153,7 +211,7 @@ class BaseFilterConverter(ABC, Abstract):
 class SimpleFilterConverter(BaseFilterConverter):
     """Simple filter converter, that works with pairs ``"field"-"value"``.
 
-    ...
+    Has no specific implementation. Has only equals operator. Very simple filter.
     """
 
     lookup_mapping = {}  # no needs for it.
@@ -184,10 +242,21 @@ class SimpleFilterConverter(BaseFilterConverter):
 
 
 class AdvancedOperatorFilterConverter(BaseFilterConverter):
-    """"""
+    """Advanced filter with operators.
+
+    The structure of the advanced filter is the following:
+
+    ```
+        {
+            "field": "some_field_of_your_model",
+            "value": "Any value of any type.",
+            "operator": "== (Can one of the available (see schemas of lookup_mapping)).",
+        }
+    ```
+    """
 
     lookup_mapping: LookupMapping = {  # type: ignore
-        '==': builtin_operator.eq,
+        '=': builtin_operator.eq,
         '>': builtin_operator.gt,
         '<': builtin_operator.lt,
         '>=': builtin_operator.ge,
@@ -196,8 +265,8 @@ class AdvancedOperatorFilterConverter(BaseFilterConverter):
         'is_not': custom_operator.is_not,
         'between': custom_operator.between,
         'contains': custom_operator.contains,
-        # TODO: добавить валидацию значений.
-        # Например, для between, чтобы передавать строго 2 значения, иначе FilterError.
+        # TODO: add values validation for operators.
+        # For example, for between - only two values in Sequence, otherwise FilterError.
     }
 
     @classmethod
@@ -222,14 +291,26 @@ class AdvancedOperatorFilterConverter(BaseFilterConverter):
         if not is_dict_simple_filter_dict(filter_):
             msg = "Never situation. Don't use _convert_filter method directly!"
             raise FilterError(msg)
-        operator_str = filter_.get('operator', '==')
+        operator_str = filter_.get('operator', '=')
         operator_func = cls.lookup_mapping[operator_str]
         sqlalchemy_field = get_sqlalchemy_attribute(model, filter_['field'])
         return [operator_func(sqlalchemy_field, filter_['value'])]
 
 
 class DjangoLikeFilterConverter(BaseFilterConverter):
-    """"""
+    """Django filters adapter for SQLAlchemy.
+
+    Attention (1)!
+    --------------
+    Current implementation not supports nested models filtering like
+    ``field__nested_model__nested_field__gte=25``. Don't use it, if you want full adapter of django
+    filters.
+
+    Attention (2)!
+    --------------
+    Not production ready. Tested only by pytest (no manual tests in other
+    projects).
+    """
 
     lookup_mapping: LookupMappingWithNested = {  # type: ignore
         'exact': (custom_operator.django_exact, empty_nested_filter_names),
