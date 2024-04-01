@@ -10,13 +10,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.12"]
-        poetry-version: ["1.8"]
+        python-version: ["3.11", "3.12"]
     uses: ./.github/workflows/test.yaml
     with:
-      coverage: ${{ matrix.python-version == '3.12' }}
+      coverage: true
       python-version: ${{ matrix.python-version }}
-      poetry-version: ${{ matrix.poetry-version }}
   quality:
     name: "Code quality check (${{ matrix.python-version }}"
     needs:
@@ -26,7 +24,6 @@ jobs:
       matrix:
         python-version: ["3.12"]
         poetry-version: ["1.8"]
-    uses: ./../.github/workflows/lint.yaml
+    uses: ./.github/workflows/lint.yaml
     with:
       python-version: ${{ matrix.python-version }}
-      poetry-version: ${{ matrix.poetry-version }}
