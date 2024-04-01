@@ -30,12 +30,7 @@ shell:
 	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
 	$(ENV_VARS_PREFIX) $(PDM) run ipython --no-confirm-exit --no-banner --quick \
 	--InteractiveShellApp.extensions="autoreload" \
-	--InteractiveShellApp.exec_lines="%autoreload 2" \
-	--InteractiveShellApp.exec_lines="import sys, pathlib, os" \
-	--InteractiveShellApp.exec_lines="sys.path.insert(0, (pathlib.Path(os.getcwd()) / 'src').as_posix())" \
-	--InteractiveShellApp.exec_lines="from app.core.models import tables" \
-	--InteractiveShellApp.exec_lines="from app.api.v1.dependencies.databases import get_session" \
-	--InteractiveShellApp.exec_files="scripts/ipython_shell_enter_message.py"
+	--InteractiveShellApp.exec_lines="%autoreload 2"
 
 .PHONY: clean
 clean:
@@ -50,7 +45,7 @@ lint:
 	$(PDM) run black --config ./pyproject.toml --check $(NAME) --diff
 	$(PDM) run ruff check $(NAME)
 	$(PDM) run vulture $(NAME) --min-confidence 100
-	$(PDM) run bandit --configfile ./pyproject.toml -r ./$(NAME)/app
+	$(PDM) run bandit --configfile ./pyproject.toml -r ./$(NAME)
 
 .PHONY: format
 format:

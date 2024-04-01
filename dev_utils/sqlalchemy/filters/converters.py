@@ -1,3 +1,13 @@
+"""Main module for sqlalchemy filters.
+
+Contains base converter and 3 implementations:
+
+1) Simple filter - filter with key-value format. (``key - field`` equals to ``value``)
+2) Advanced filter - key-value filter with additional operator (what to do with value for given
+key).
+3) Django filter - django-sqlalchemy filter adapter.
+"""
+
 import enum
 import operator as builtin_operator
 from abc import ABC, abstractmethod
@@ -40,13 +50,17 @@ django_nested_filter_names: NestedFilterNames = {
 }
 
 
-def eval_operator_function(  # noqa: ANN201
+def execute_operator_function(  # noqa: ANN201
     func: OperatorFunction,
     a: Any,  # noqa: ANN401
     b: Any,  # noqa: ANN401
     subproduct_use: bool = False,  # noqa: FBT001, FBT002
 ):
-    """"""
+    """Call given operator function with checking for ``subproduct_use`` signature.
+
+    Simple wrapper to not execute function every time with checking, that operator has
+    subproduct_use.
+    """
     function_signature = signature(func)
     if function_signature.parameters.get('subproduct_use'):
         return func(a, b, subproduct_use=subproduct_use)
@@ -174,18 +188,22 @@ class BaseFilterConverter(ABC, Abstract):
         sqlalchemy_field = get_sqlalchemy_attribute(model, field_name)
         if not has_nested_lookups(cls.lookup_mapping) or not rest_lookups:
             operator_func = cls.lookup_mapping[parent_lookup]
-            if isinstance(operator_func, tuple):
+            if isinstance(operator_func, tuple):  # pragma: no cover
+                # NOTE: never situation.
+                # Made it just for sure (like, if there will be only empty sets in sub-lookup).
                 operator_func, *_ = operator_func
             return operator_func(sqlalchemy_field, value)  # type: ignore
         operator_func, nested_filter_names = cls.lookup_mapping[parent_lookup]
-        filter_subproduct = eval_operator_function(
+        filter_subproduct = execute_operator_function(
             operator_func,
             sqlalchemy_field,
             value,
             subproduct_use=bool(rest_lookups),
         )
         final_lookup = rest_lookups[-1]
-        for rest_lookup in rest_lookups[:-1]:
+        # NOTE: no nested lookups with 3 level or more depth level.
+        # That is why below for-loop will not be executed.
+        for rest_lookup in rest_lookups[:-1]:  # pragma: no cover
             if rest_lookup not in nested_filter_names:
                 msg = (
                     f'lookup "{rest_lookup}" is not supported for parent lookup "{parent_lookup}".'
@@ -193,14 +211,14 @@ class BaseFilterConverter(ABC, Abstract):
                 raise FilterError(msg)
             parent_lookup = rest_lookup
             operator_func, nested_filter_names = cls.lookup_mapping[parent_lookup]
-            filter_subproduct = eval_operator_function(
+            filter_subproduct = execute_operator_function(
                 operator_func,
                 sqlalchemy_field,
                 filter_subproduct,
                 subproduct_use=True,
             )
         operator_func, _ = cls.lookup_mapping[final_lookup]
-        return eval_operator_function(
+        return execute_operator_function(
             operator_func,
             filter_subproduct,
             value,
@@ -386,7 +404,7 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
         sqlalchemy_filters: Sequence[SQLAlchemyFilter] = []
         for field, value in filter_.items():
             field_parts = field.split('__')
-            # TODO: добавить возможность фильтровать по связанным сущностям.
+            # TODO: add filtering by relationships.
             if len(field_parts) == 1:
                 field_name = field_parts[0]
                 lookup = 'exact'

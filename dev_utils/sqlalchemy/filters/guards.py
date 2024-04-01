@@ -11,11 +11,6 @@ if TYPE_CHECKING:
     from dev_utils.sqlalchemy.filters.converters import AnyLookupMapping, LookupMappingWithNested
 
 
-def all_dict_keys_are_str(value: dict[Any, Any]) -> TypeGuard[dict[str, Any]]:
-    """TypeGuard for checking dict keys are all strings."""
-    return all(isinstance(key, str) for key in value)
-
-
 def is_dict_simple_filter_dict(value: dict[Any, Any]) -> TypeGuard['OperatorFilterDict']:
     """TypeGuard for checking dict is ``OperatorFilterDict`` (typed dict) instance.
 

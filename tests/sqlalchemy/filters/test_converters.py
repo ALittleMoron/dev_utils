@@ -385,7 +385,11 @@ def test_converter(  # noqa
         ),
         (
             DjangoLikeFilterConverter,
-            {'dt__hour__gt__abc': 2},  # NOTE: пока нет обработки вложенных фильтров.
+            {'dt__hour__gt__abc': 2},
+        ),
+        (
+            DjangoLikeFilterConverter,
+            {'dt_hour__wrong__gt': 2},
         ),
         (
             DjangoLikeFilterConverter,

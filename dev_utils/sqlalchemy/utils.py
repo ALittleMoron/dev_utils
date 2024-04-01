@@ -1,4 +1,8 @@
-"""Модуль утилит."""
+"""Utils module of sqlalchemy dev package.
+
+Contains functions, which inspect models, apply joins, apply options and wrap some sqlalchemy
+functionality.
+"""
 
 import datetime
 import types
@@ -345,7 +349,7 @@ def apply_loads(
     *relationship_names : str
         any relationship names of model.
     load_strategy : Callable
-        any callable object, that will return Load object.
+        any callable, that will return Load object.
 
     Returns
     -------
@@ -356,7 +360,6 @@ def apply_loads(
     loaders: list['_AbstractLoad'] = []
     for relationship_ in relationship_names:
         sqlalchemy_relationship = None
-        # TODO: добавить поиск по названию модели (joins=('ModelName'))
         for model_ in model_classes:
             if relationship_ in get_valid_relationships_names(model_):
                 sqlalchemy_relationship = get_sqlalchemy_attribute(model_, relationship_)
@@ -365,8 +368,8 @@ def apply_loads(
                 f'SQLAlchemy relationship "{relationship_}" was not found in {model_classes}. '
                 'Maybe you passed incorrect relationship name or passed model name.'
             )
-            logger.warning(msg)
-            # TODO: добавить вывод всех relationships, либо вывести ближайший relationship
+            logger.error(msg)
+            # TODO: add all available relationships or nearest (fuzzy search) in message.
             raise NoModelRelationshipError(msg)
         load = load_strategy(sqlalchemy_relationship)
         loaders.append(load)
@@ -406,7 +409,6 @@ def apply_joins(
     }
     for relationship_ in relationship_names:
         sqlalchemy_relationship = None
-        # TODO: добавить поиск по названию модели (joins=('ModelName'))
         for model_ in model_classes:
             valid_relationships_names = model_to_valid_relationship_names[model_]
             if relationship_ in valid_relationships_names:
@@ -416,13 +418,12 @@ def apply_joins(
                 f'SQLAlchemy relationship "{relationship_}" was not found in {model_classes}. '
                 'Maybe you passed incorrect relationship name or passed model name.'
             )
-            logger.warning(msg)
-            # TODO: добавить вывод всех relationships, либо вывести ближайший relationship
+            logger.error(msg)
+            # TODO: add all available relationships or nearest (fuzzy search) in message.
             raise NoModelRelationshipError(msg)
         stmt = stmt.join(  # type: ignore
             sqlalchemy_relationship,
             isouter=left_outer_join,
             full=full_join,
         )
-    return stmt
     return stmt

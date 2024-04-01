@@ -1,3 +1,8 @@
+"""Logging module.
+
+Contains base logging config and logger instance.
+"""
+
 import logging
 import logging.config
 
@@ -15,13 +20,13 @@ LOGGER_CONFIG = {
     },
     "handlers": {
         "console": {
-            "level": "WARNING",
+            "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "main_formatter",
         },
     },
     "loggers": {
-        "dev_utils": {"handlers": ["console"], "level": "DEBUG"},
+        "dev_utils": {"handlers": ["console"], "level": "INFO"},
     },
 }
 

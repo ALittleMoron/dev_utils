@@ -41,7 +41,7 @@ class OperatorFunctionProtocol(Protocol):  # noqa: D101
 # TODO: add links to django docs for all adapters.
 
 
-def do_nothing(*args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+def do_nothing(*args: Any, **kwargs: Any) -> None:  # noqa: ANN401, F841
     """Real do nothing function.
 
     Return None, receive any parameters.
