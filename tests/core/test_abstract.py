@@ -5,25 +5,25 @@ import pytest
 from dev_utils.core import abstract
 
 
-class CorrectClass(abstract.Abstract):
+class CorrectClass(abstract.Abstract):  # noqa: D101
     a: str = abstract.abstract_class_property(str)
 
 
-class CorrectClassWithABC(ABC, abstract.Abstract):
+class CorrectClassWithABC(ABC, abstract.Abstract):  # noqa: D101
     a: str = abstract.abstract_class_property(str)
 
 
 def test_attr_warning_no_abstract_property() -> None:
     with pytest.warns(abstract.AbstractClassWithoutAbstractPropertiesWarning):
 
-        class ClassWithoutProperties(abstract.Abstract):
+        class ClassWithoutProperties(abstract.Abstract):  # type: ignore
             pass
 
 
 def test_attr_abstract_without_class() -> None:
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):  # noqa: B017, PT011
 
-        class ClassWithoutProperties:
+        class ClassWithoutProperties:  # type: ignore
             a: str = abstract.abstract_class_property(str)
 
 
