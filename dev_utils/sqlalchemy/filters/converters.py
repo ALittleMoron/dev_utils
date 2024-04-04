@@ -15,9 +15,9 @@ from collections.abc import Sequence
 from inspect import signature
 from typing import TYPE_CHECKING, Any, final
 
-from abstractcp import Abstract, abstract_class_property
 from sqlalchemy.sql.elements import ColumnElement
 
+from dev_utils.core.abstract import Abstract, abstract_class_property
 from dev_utils.core.exc import FilterError
 from dev_utils.sqlalchemy.filters import operators as custom_operator
 from dev_utils.sqlalchemy.filters.guards import has_nested_lookups, is_dict_simple_filter_dict

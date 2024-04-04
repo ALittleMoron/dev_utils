@@ -22,7 +22,7 @@ help:
 .PHONY: install
 install:
 	@if [ -z $(PDM) ]; then echo "PDM could not be found."; exit 2; fi
-	$(PDM) install
+	$(PDM) install -G:all --no-self
 
 
 .PHONY: shell

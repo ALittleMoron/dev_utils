@@ -1,4 +1,5 @@
 from logging import Logger
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from sqlalchemy import Engine
@@ -15,6 +16,7 @@ def add_query_profiling_middleware(
     *,
     profiler_id: str | None = None,
     logger: Logger = default_logger,
+    report_to: str | Logger | Path = default_logger,
     log_query_stats: bool = False,
 ) -> FastAPI:
     """Add query profiling middleware to FastAPI.
@@ -36,11 +38,8 @@ def add_query_profiling_middleware(
         ) as profiler:
             logger.info('Profiler %s: start profiling %s', profiler.profiler_id, request.url)
             response = await call_next(request)
-        logger.info(
-            'Profiler %s result: %s',
-            profiler.profiler_id,
-            profiler.collect(),
-        )
+        profiler.report(report_to)
+        logger.info('Profiler %s finished.', profiler.profiler_id)
         return response
 
     app.middleware("http")(_profiling_middleware)

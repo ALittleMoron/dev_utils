@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -35,6 +36,17 @@ def test_sync_sql_alchemy_query_profiler_double_start(
     profiler.start()
     profiler.start()
     profiler.stop()
+
+
+def test_sync_sql_alchemy_query_profiler_report(
+    db_sync_engine: 'Engine',
+) -> None:
+    profiler = profilers.SQLAlchemyQueryProfiler(db_sync_engine)
+    profiler.start()
+    profiler.stop()
+    file = Path('report.txt')
+    profiler.report(file)
+    assert file.exists()
 
 
 def test_sync_sql_alchemy_query_profiler_double_stop(

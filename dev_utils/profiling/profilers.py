@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from contextlib import suppress
 from logging import Logger
+from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar, final
 
@@ -17,6 +18,7 @@ from dev_utils.core.guards import all_dict_keys_are_str
 from dev_utils.core.logging import logger as default_logger
 from dev_utils.core.utils import trim_and_plain_text
 from dev_utils.profiling.containers import QueryInfo
+from dev_utils.profiling.utils import pretty_query_info
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection
@@ -168,6 +170,10 @@ class BaseSQLAlchemyProfiler(ABC, Generic[T]):
 
         return queries
 
+    def report(self, stdout: 'str | Path | Logger | None' = None) -> None:  # noqa: F841
+        """Make report about profiling."""
+        return  # pragma: no coverage
+
 
 class SQLAlchemyQueryProfiler(BaseSQLAlchemyProfiler[QueryInfo]):
     """SQLAlchemy query profiler."""
@@ -224,6 +230,16 @@ class SQLAlchemyQueryProfiler(BaseSQLAlchemyProfiler[QueryInfo]):
         )
 
         self.collector.put(query_info)
+
+    def report(self, stdout: str | Path | Logger | None = None) -> None:  # noqa: D102
+        if not stdout:  # pragma: no coverage
+            stdout = self.logger
+        data = pretty_query_info(self.collect())
+        if isinstance(stdout, Logger):
+            stdout.info(data)
+            return
+        with Path(stdout).open('a') as writer:
+            writer.write(data)
 
 
 class SQLAlchemyQueryCounter(BaseSQLAlchemyProfiler[int]):

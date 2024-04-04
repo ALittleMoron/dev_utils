@@ -142,18 +142,18 @@ dev = [
 
 
 [project]
-name = "dev_utils"
-version = "0.1.0"
+name = "python_dev_utils"
+version = "0.1.1"
 description = "My project utils package, that I use in my projects."
-authors = []
+authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
-dependencies = ["uvicorn>=0.29.0"]
+dependencies = []
 
 [project.optional-dependencies]
 profiling = ["fastapi>=0.110.0", "sqlalchemy>=2.0.28"]
-sqlalchemy_filters = ["sqlalchemy>=2.0.28", "abstractcp>=0.9.9"]
+sqlalchemy_filters = ["sqlalchemy>=2.0.28"]
 
 [build-system]
 requires = ["pdm-backend"]
