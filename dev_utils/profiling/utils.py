@@ -14,8 +14,8 @@ def pretty_query_info(info: 'QueryInfo | Sequence[QueryInfo]') -> str:  # pragma
         'index: {query_index}\n'
         'query text: {query_text}\n'
         'query params: {query_params}\n'
-        'query duration: {query_duration}'
-        'query rowcount (may be incorrect): {query_rowcount}'
+        'query duration: {query_duration}\n'
+        'query rowcount (may be incorrect): {query_rowcount}\n'
     )
     if not isinstance(info, Sequence):
         info = [info]
