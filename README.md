@@ -1,7 +1,5 @@
 # Dev utils
 
-> Templated repository pattern implementation for your declarative models.
-
 ## For what?
 
 I made this project to avoid copy-pasting with utils in my projects. I was aiming to simplify
