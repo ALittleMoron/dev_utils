@@ -10,14 +10,14 @@ def get_object_class_absolute_name(obj: object) -> str:
     """
     class_ = obj if inspect.isclass(obj) else obj.__class__
     module = class_.__module__
-    if module == 'builtins':
+    if module == "builtins":
         return class_.__qualname__
-    return module + '.' + class_.__qualname__
+    return module + "." + class_.__qualname__
 
 
 def trim_and_plain_text(text: str) -> str:
     """Make text plain and trim."""
     text = text.strip()
-    while '  ' in text:
-        text = text.replace('  ', ' ')
-    return text.replace('\n', ' ').strip()
+    while "  " in text:
+        text = text.replace("  ", " ")
+    return text.replace("\n", " ").strip()

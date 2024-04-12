@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_scoped_session, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from dev_utils.profiling.middlewares import (
+from dev_utils.fastapi.middlewares.sqlalchemy_profiling import (
     add_query_counter_middleware,
     add_query_profiling_middleware,
 )
@@ -38,68 +38,68 @@ if TYPE_CHECKING:
     from tests.types import AsyncFactoryFunctionProtocol, SyncFactoryFunctionProtocol
 
 
-true_stmt = {'y', 'Y', 'yes', 'Yes', 't', 'true', 'True', '1'}
-IS_DOCKER_TEST = os.environ.get('IS_DOCKER_TEST', 'false') in true_stmt
+true_stmt = {"y", "Y", "yes", "Yes", "t", "true", "True", "1"}
+IS_DOCKER_TEST = os.environ.get("IS_DOCKER_TEST", "false") in true_stmt
 
 
 @pytest.fixture(scope="session")
-def event_loop() -> 'Generator[asyncio.AbstractEventLoop, None, None]':
+def event_loop() -> "Generator[asyncio.AbstractEventLoop, None, None]":
     """Event loop fixture."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_name() -> str:
     """Db name as fixture."""
-    return 'test_db'
+    return "test_db"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_user() -> str:
     """DB user as fixture."""
-    return 'postgres'
+    return "postgres"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_password() -> str:
     """DB password as fixture."""
-    return 'postgres'
+    return "postgres"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_host() -> str:
     """DB host as fixture."""
-    return 'db' if IS_DOCKER_TEST else 'localhost'
+    return "db" if IS_DOCKER_TEST else "localhost"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_port() -> int:
     """DB port as fixture."""
     return 5432
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_domain(db_name: str, db_user: str, db_password: str, db_host: str, db_port: int) -> str:
     """Domain for test db without specified driver."""
-    return f'{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+    return f"{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_sync_url(db_domain: str) -> str:
     """URL for test db (will be created in db_engine): sync driver."""
-    return f'postgresql://{db_domain}'
+    return f"postgresql://{db_domain}"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def db_async_url(db_domain: str) -> str:
     """URL for test db (will be created in db_engine): async driver."""
-    return f'postgresql+asyncpg://{db_domain}'
+    return f"postgresql+asyncpg://{db_domain}"
 
 
-@pytest.fixture(scope='session')
-def db_sync_engine(db_sync_url: str) -> 'Generator[Engine, None, None]':
+@pytest.fixture(scope="session")
+def db_sync_engine(db_sync_url: str) -> "Generator[Engine, None, None]":
     """SQLAlchemy engine session-based fixture."""
     with suppress(SQLAlchemyError):
         create_db(db_sync_url)
@@ -112,8 +112,8 @@ def db_sync_engine(db_sync_url: str) -> 'Generator[Engine, None, None]':
         destroy_db(db_sync_url)
 
 
-@pytest_asyncio.fixture(scope='session')  # type: ignore
-async def db_async_engine(db_async_url: str) -> 'AsyncGenerator[AsyncEngine, None]':  # type: ignore
+@pytest_asyncio.fixture(scope="session")  # type: ignore
+async def db_async_engine(db_async_url: str) -> "AsyncGenerator[AsyncEngine, None]":  # type: ignore
     """SQLAlchemy engine session-based fixture."""
     engine = create_async_engine(db_async_url, echo=True, pool_pre_ping=True)
     try:
@@ -122,8 +122,8 @@ async def db_async_engine(db_async_url: str) -> 'AsyncGenerator[AsyncEngine, Non
         await engine.dispose()
 
 
-@pytest.fixture(scope='session')
-def db_sync_session_factory(db_sync_engine: 'Engine') -> 'scoped_session[Session]':
+@pytest.fixture(scope="session")
+def db_sync_session_factory(db_sync_engine: "Engine") -> "scoped_session[Session]":
     """SQLAlchemy session factory session-based fixture."""
     return scoped_session(
         sessionmaker(
@@ -134,10 +134,10 @@ def db_sync_session_factory(db_sync_engine: 'Engine') -> 'scoped_session[Session
     )
 
 
-@pytest.fixture(scope='session')  # type: ignore
+@pytest.fixture(scope="session")  # type: ignore
 def db_async_session_factory(
-    db_async_engine: 'AsyncEngine',
-) -> 'async_scoped_session[AsyncSession]':
+    db_async_engine: "AsyncEngine",
+) -> "async_scoped_session[AsyncSession]":
     """SQLAlchemy session factory session-based fixture."""
     return async_scoped_session(
         async_sessionmaker(
@@ -151,9 +151,9 @@ def db_async_session_factory(
 
 @pytest.fixture()
 def db_sync_session(
-    db_sync_engine: 'Engine',
-    db_sync_session_factory: 'scoped_session[Session]',
-) -> 'Generator[Session, None, None]':
+    db_sync_engine: "Engine",
+    db_sync_session_factory: "scoped_session[Session]",
+) -> "Generator[Session, None, None]":
     """SQLAlchemy session fixture."""
     Base.metadata.drop_all(db_sync_engine)
     Base.metadata.create_all(db_sync_engine)
@@ -163,9 +163,9 @@ def db_sync_session(
 
 @pytest_asyncio.fixture()  # type: ignore
 async def db_async_session(
-    db_async_engine: 'AsyncEngine',
-    db_async_session_factory: 'async_scoped_session[AsyncSession]',
-) -> 'AsyncGenerator[AsyncSession, None]':
+    db_async_engine: "AsyncEngine",
+    db_async_session_factory: "async_scoped_session[AsyncSession]",
+) -> "AsyncGenerator[AsyncSession, None]":
     """SQLAlchemy session fixture."""
     async with db_async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -178,11 +178,11 @@ async def db_async_session(
 def mymodel_sync_factory(
     dt_faker: Datetime,
     text_faker: Text,
-) -> 'SyncFactoryFunctionProtocol[MyModel]':
+) -> "SyncFactoryFunctionProtocol[MyModel]":
     """Function-factory, that create MyModel instances."""
 
     def _create(
-        session: 'Session',
+        session: "Session",
         *,
         commit: bool = False,
         **kwargs: Any,  # noqa: ANN401
@@ -202,20 +202,20 @@ def mymodel_sync_factory(
 @pytest.fixture()
 def othermodel_sync_factory(
     text_faker: Text,
-    mymodel_sync_factory: 'SyncFactoryFunctionProtocol[MyModel]',
-) -> 'SyncFactoryFunctionProtocol[OtherModel]':
+    mymodel_sync_factory: "SyncFactoryFunctionProtocol[MyModel]",
+) -> "SyncFactoryFunctionProtocol[OtherModel]":
     """Function-factory, that create OtherModel instances."""
 
     def _create(
-        session: 'Session',
+        session: "Session",
         *,
         commit: bool = False,
         **kwargs: Any,  # noqa: ANN401
     ) -> OtherModel:
-        if 'model_id' not in kwargs:
+        if "model_id" not in kwargs:
             model_id = mymodel_sync_factory(session, commit=commit).id
         else:
-            model_id = kwargs.pop('model_id')
+            model_id = kwargs.pop("model_id")
         params: dict[str, Any] = dict(
             name=text_faker.sentence(),
             other_name=text_faker.sentence(),
@@ -231,11 +231,11 @@ def othermodel_sync_factory(
 def mymodel_async_factory(
     text_faker: Text,
     dt_faker: Datetime,
-) -> 'AsyncFactoryFunctionProtocol[MyModel]':
+) -> "AsyncFactoryFunctionProtocol[MyModel]":
     """Function-factory, that create MyModel instances."""
 
     async def _create(
-        session: 'AsyncSession',
+        session: "AsyncSession",
         *,
         commit: bool = False,
         **kwargs: Any,  # noqa: ANN401
@@ -255,21 +255,21 @@ def mymodel_async_factory(
 @pytest.fixture()
 def othermodel_async_factory(
     text_faker: Text,
-    mymodel_async_factory: 'AsyncFactoryFunctionProtocol[MyModel]',
-) -> 'AsyncFactoryFunctionProtocol[OtherModel]':
+    mymodel_async_factory: "AsyncFactoryFunctionProtocol[MyModel]",
+) -> "AsyncFactoryFunctionProtocol[OtherModel]":
     """Function-factory, that create OtherModel instances."""
 
     async def _create(
-        session: 'AsyncSession',
+        session: "AsyncSession",
         *,
         commit: bool = False,
         **kwargs: Any,  # noqa: ANN401
     ) -> OtherModel:
-        if 'model_id' not in kwargs:
+        if "model_id" not in kwargs:
             model = await mymodel_async_factory(session, commit=commit)
             model_id = model.id
         else:
-            model_id = kwargs.pop('model_id')
+            model_id = kwargs.pop("model_id")
         params: dict[str, Any] = dict(
             name=text_faker.sentence(),
             other_name=text_faker.sentence(),
@@ -293,21 +293,21 @@ def dt_faker() -> Datetime:
 
 @pytest.fixture()
 def test_sync_app(
-    db_sync_session: 'Session',
-    db_sync_engine: 'Engine',
-    mymodel_sync_factory: 'SyncFactoryFunctionProtocol[MyModel]',
-) -> 'Generator[TestClient, None, None]':
+    db_sync_session: "Session",
+    db_sync_engine: "Engine",
+    mymodel_sync_factory: "SyncFactoryFunctionProtocol[MyModel]",
+) -> "Generator[TestClient, None, None]":
     app = FastAPI()
     add_query_profiling_middleware(app, engine=db_sync_engine)
     add_query_counter_middleware(app, engine=db_sync_engine)
     for _ in range(10):
         mymodel_sync_factory(db_sync_session)
 
-    @app.get('/')
+    @app.get("/")
     def index():  # type: ignore  # noqa: ANN202
         stmt = select(MyModel)
         items = db_sync_session.execute(stmt).scalars().all()
-        items = [{'id': item.id} for item in items]
+        items = [{"id": item.id} for item in items]
         return items
 
     with TestClient(

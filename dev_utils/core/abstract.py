@@ -3,7 +3,7 @@ from warnings import warn
 
 from dev_utils.core.utils import get_object_class_absolute_name
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class AbstractClassWithoutAbstractPropertiesWarning(Warning):
@@ -12,7 +12,7 @@ class AbstractClassWithoutAbstractPropertiesWarning(Warning):
 
 class _AbstractClassProperty(Generic[T]):
     __repr_template: str = (
-        '{cls_path}({property_type_name}) on {containing_klass_name}.{property_name}'
+        "{cls_path}({property_type_name}) on {containing_klass_name}.{property_name}"
     )
     __name__: str
     __containing_klass_name__: str
@@ -116,8 +116,14 @@ def abstract_class_property(propertytype: type[T]) -> T:
 class Abstract:
     """Abstract class for to use with abstract_class_property."""
 
+    __skip_abstract_raise_error__: bool = False
+
     def __init_subclass__(cls, **kwargs: Any) -> None:  # noqa: ANN401, D105
         super().__init_subclass__(**kwargs)
+        if cls.__skip_abstract_raise_error__:
+            # NOTE: for further inherit.
+            cls.__skip_abstract_raise_error__ = False
+            return
         if Abstract in cls.__bases__:
             for name in dir(cls):
                 if name.startswith("__") and name.endswith("__"):

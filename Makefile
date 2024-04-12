@@ -56,10 +56,11 @@ format:
 .PHONY: test
 test:
 	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
-	$(PDM) run pytest ./tests --cov-report xml --cov-fail-under 60 --cov ./$(NAME) -v
+	$(PDM) run pytest ./tests --cov-report xml --cov-fail-under 60 --cov ./$(NAME) -vv
 
 
 .PHONY: test_docker
 test_docker:
 	@if [ -z $(PDM) ]; then echo "Poetry could not be found. See https://python-poetry.org/docs/"; exit 2; fi
 	$(ENV_VARS_PREFIX) docker-compose -f docker/docker-compose-test.yaml up --build
+	$(ENV_VARS_PREFIX) docker-compose -f docker/docker-compose-test.yaml down

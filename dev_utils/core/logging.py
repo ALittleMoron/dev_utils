@@ -32,4 +32,4 @@ LOGGER_CONFIG = {
 
 
 logging.config.dictConfig(LOGGER_CONFIG)
-logger = logging.getLogger('dev_utils')
+logger = logging.getLogger("dev_utils")

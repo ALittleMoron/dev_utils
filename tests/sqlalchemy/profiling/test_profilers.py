@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import select
 
 from dev_utils.core.utils import trim_and_plain_text
-from dev_utils.profiling import profilers
+from dev_utils.sqlalchemy.profiling import profilers
 from tests.utils import MyModel
 
 if TYPE_CHECKING:
@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 
 def test_sync_sql_alchemy_query_profiler(
-    db_sync_engine: 'Engine',
-    db_sync_session: 'Session',
+    db_sync_engine: "Engine",
+    db_sync_session: "Session",
 ) -> None:
     profiler = profilers.SQLAlchemyQueryProfiler(db_sync_engine)
     profiler.start()
@@ -30,7 +30,7 @@ def test_sync_sql_alchemy_query_profiler(
 
 
 def test_sync_sql_alchemy_query_profiler_double_start(
-    db_sync_engine: 'Engine',
+    db_sync_engine: "Engine",
 ) -> None:
     profiler = profilers.SQLAlchemyQueryProfiler(db_sync_engine)
     profiler.start()
@@ -39,18 +39,18 @@ def test_sync_sql_alchemy_query_profiler_double_start(
 
 
 def test_sync_sql_alchemy_query_profiler_report(
-    db_sync_engine: 'Engine',
+    db_sync_engine: "Engine",
 ) -> None:
     profiler = profilers.SQLAlchemyQueryProfiler(db_sync_engine)
     profiler.start()
     profiler.stop()
-    file = Path('report.txt')
+    file = Path("report.txt")
     profiler.report(file)
     assert file.exists()
 
 
 def test_sync_sql_alchemy_query_profiler_double_stop(
-    db_sync_engine: 'Engine',
+    db_sync_engine: "Engine",
 ) -> None:
     profiler = profilers.SQLAlchemyQueryProfiler(db_sync_engine)
     profiler.start()
@@ -59,8 +59,8 @@ def test_sync_sql_alchemy_query_profiler_double_stop(
 
 
 def test_sync_sql_alchemy_query_profiler_context_manager(
-    db_sync_engine: 'Engine',
-    db_sync_session: 'Session',
+    db_sync_engine: "Engine",
+    db_sync_session: "Session",
 ) -> None:
     with profilers.SQLAlchemyQueryProfiler(db_sync_engine) as profiler:
         stmt = select(MyModel)
@@ -73,8 +73,8 @@ def test_sync_sql_alchemy_query_profiler_context_manager(
 
 @pytest.mark.asyncio()
 async def test_async_sql_alchemy_query_profiler(
-    db_async_engine: 'AsyncEngine',
-    db_async_session: 'AsyncSession',
+    db_async_engine: "AsyncEngine",
+    db_async_session: "AsyncSession",
 ) -> None:
     profiler = profilers.SQLAlchemyQueryProfiler(db_async_engine)
     profiler.start()
@@ -89,8 +89,8 @@ async def test_async_sql_alchemy_query_profiler(
 
 @pytest.mark.asyncio()
 async def test_async_sql_alchemy_query_profiler_context_manager(
-    db_async_engine: 'AsyncEngine',
-    db_async_session: 'AsyncSession',
+    db_async_engine: "AsyncEngine",
+    db_async_session: "AsyncSession",
 ) -> None:
     with profilers.SQLAlchemyQueryProfiler(db_async_engine) as profiler:
         stmt = select(MyModel)

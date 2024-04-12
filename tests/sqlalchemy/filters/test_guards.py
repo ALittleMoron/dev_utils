@@ -8,14 +8,14 @@ any_value = object()
 
 
 @pytest.mark.parametrize(
-    ('_dct', 'expected_result'),
+    ("_dct", "expected_result"),
     [
-        ({'field': 'abc', 'value': any_value, 'operator': '>'}, True),
-        ({'field': 'abc', 'value': any_value}, True),
-        ({'field': 125, 'value': any_value}, False),
-        ({'field': 125, 'value': any_value, 'operator': '>'}, False),
-        ({'field': 'abc', 'value': any_value, 'operator': 'pow'}, False),  # no such operator
-        ({'field': 'abc', 'operator': '>'}, False),  # no value
+        ({"field": "abc", "value": any_value, "operator": ">"}, True),
+        ({"field": "abc", "value": any_value}, True),
+        ({"field": 125, "value": any_value}, False),
+        ({"field": 125, "value": any_value, "operator": ">"}, False),
+        ({"field": "abc", "value": any_value, "operator": "pow"}, False),  # no such operator
+        ({"field": "abc", "operator": ">"}, False),  # no value
     ],
 )
 def test_is_dict_simple_filter_dict(_dct: dict[Any, Any], expected_result: bool) -> None:  # noqa
@@ -23,7 +23,7 @@ def test_is_dict_simple_filter_dict(_dct: dict[Any, Any], expected_result: bool)
 
 
 @pytest.mark.parametrize(
-    ('_dct', 'expected_result'),
+    ("_dct", "expected_result"),
     [
         (converters.SimpleFilterConverter.lookup_mapping, False),
         (converters.AdvancedOperatorFilterConverter.lookup_mapping, False),

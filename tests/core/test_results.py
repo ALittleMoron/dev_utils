@@ -19,13 +19,13 @@ def test_ok() -> None:
     assert result == other_result
     assert result != other_ne_result
     assert result != 25
-    assert repr(result) == 'Ok(25)'
+    assert repr(result) == "Ok(25)"
 
 
 def test_error() -> None:
-    result = some_func('string')
-    other_result = some_func('string')
-    other_ne_result = some_func('not string')
+    result = some_func("string")
+    other_result = some_func("string")
+    other_ne_result = some_func("not string")
     assert isinstance(result, results.Err)
     assert isinstance(result.err(), TypeError)
     with pytest.raises(TypeError):

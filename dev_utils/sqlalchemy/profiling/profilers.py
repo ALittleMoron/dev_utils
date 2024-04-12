@@ -17,8 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from dev_utils.core.guards import all_dict_keys_are_str
 from dev_utils.core.logging import logger as default_logger
 from dev_utils.core.utils import trim_and_plain_text
-from dev_utils.profiling.containers import QueryInfo
-from dev_utils.profiling.utils import pretty_query_info
+from dev_utils.sqlalchemy.profiling.containers import QueryInfo
+from dev_utils.sqlalchemy.profiling.utils import pretty_query_info
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.compiler import SQLCompiler
     from sqlalchemy.util import immutabledict
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class BaseSQLAlchemyProfiler(ABC, Generic[T]):
@@ -42,7 +42,7 @@ class BaseSQLAlchemyProfiler(ABC, Generic[T]):
 
     def __init__(
         self,
-        engine: 'type[Engine] | Engine | AsyncEngine' = Engine,
+        engine: "type[Engine] | Engine | AsyncEngine" = Engine,
         *,
         profiler_id: str | None = None,
         logger: Logger = default_logger,
@@ -64,11 +64,11 @@ class BaseSQLAlchemyProfiler(ABC, Generic[T]):
     @abstractmethod
     def _before_exec(
         self,
-        conn: 'Connection',
-        clause: 'SQLCompiler',
-        multiparams: 'Sequence[Mapping[str, Any]]',  # noqa: F841
-        params: 'Mapping[str, Any]',
-        execution_options: 'immutabledict[str, Any]',  # noqa: F841
+        conn: "Connection",
+        clause: "SQLCompiler",
+        multiparams: "Sequence[Mapping[str, Any]]",  # noqa: F841
+        params: "Mapping[str, Any]",
+        execution_options: "immutabledict[str, Any]",  # noqa: F841
     ) -> None:
         """Method, which will be bounded to `before_execute` handler in SQLAlchemy."""  # noqa: D401
         raise NotImplementedError()
@@ -76,12 +76,12 @@ class BaseSQLAlchemyProfiler(ABC, Generic[T]):
     @abstractmethod
     def _after_exec(
         self,
-        conn: 'Connection',
-        clause: 'ClauseElement',
-        multiparams: 'Sequence[Mapping[str, Any]]',  # noqa: F841
-        params: 'Mapping[str, Any]',
-        execution_options: 'immutabledict[str, Any]',  # noqa: F841
-        results: 'CursorResult[Any]',
+        conn: "Connection",
+        clause: "ClauseElement",
+        multiparams: "Sequence[Mapping[str, Any]]",  # noqa: F841
+        params: "Mapping[str, Any]",
+        execution_options: "immutabledict[str, Any]",  # noqa: F841
+        results: "CursorResult[Any]",
     ) -> None:
         """Method, which will be bounded to `after_execute` handler in SQLAlchemy."""  # noqa: D401
         raise NotImplementedError()
@@ -89,11 +89,11 @@ class BaseSQLAlchemyProfiler(ABC, Generic[T]):
     @final
     def _extract_parameters_from_results(
         self,
-        query_results: 'CursorResult[Any]',
+        query_results: "CursorResult[Any]",
     ) -> dict[str, Any]:
         """Get parameters from query results object."""
         params_dict: dict[str, Any] = {}
-        compiled_parameters = getattr(query_results.context, 'compiled_parameters', [])
+        compiled_parameters = getattr(query_results.context, "compiled_parameters", [])
         if not compiled_parameters or not isinstance(  # pragma: no cover
             compiled_parameters,
             Sequence,
@@ -170,7 +170,7 @@ class BaseSQLAlchemyProfiler(ABC, Generic[T]):
 
         return queries
 
-    def report(self, stdout: 'str | Path | Logger | None' = None) -> None:  # noqa: F841
+    def report(self, stdout: "str | Path | Logger | None" = None) -> None:  # noqa: F841
         """Make report about profiling."""
         return  # pragma: no coverage
 
@@ -180,36 +180,36 @@ class SQLAlchemyQueryProfiler(BaseSQLAlchemyProfiler[QueryInfo]):
 
     def _before_exec(
         self,
-        conn: 'Connection',
-        clause: 'SQLCompiler',
-        multiparams: 'Sequence[Mapping[str, Any]]',  # noqa: F841
-        params: 'Mapping[str, Any]',
-        execution_options: 'immutabledict[str, Any]',  # noqa: F841
+        conn: "Connection",
+        clause: "SQLCompiler",
+        multiparams: "Sequence[Mapping[str, Any]]",  # noqa: F841
+        params: "Mapping[str, Any]",
+        execution_options: "immutabledict[str, Any]",  # noqa: F841
     ) -> None:
         conn.info.setdefault("query_start_time", []).append(time.time())
         if self.log_query_states:  # pragma: no cover
             msg = (
-                f'Profiler {self.profiler_id}. '
-                f'Query started: {trim_and_plain_text(str(clause))}. Params: {params}'
+                f"Profiler {self.profiler_id}. "
+                f"Query started: {trim_and_plain_text(str(clause))}. Params: {params}"
             )
             self.logger.info(msg)
 
     def _after_exec(
         self,
-        conn: 'Connection',
-        clause: 'ClauseElement',
-        multiparams: 'Sequence[Mapping[str, Any]]',  # noqa: F841
-        params: 'Mapping[str, Any]',
-        execution_options: 'immutabledict[str, Any]',  # noqa: F841
-        results: 'CursorResult[Any]',
+        conn: "Connection",
+        clause: "ClauseElement",
+        multiparams: "Sequence[Mapping[str, Any]]",  # noqa: F841
+        params: "Mapping[str, Any]",
+        execution_options: "immutabledict[str, Any]",  # noqa: F841
+        results: "CursorResult[Any]",
     ) -> None:
         end_time = time.time()
         start_time = conn.info["query_start_time"].pop(-1)
         if self.log_query_states:  # pragma: no cover
             msg = (
-                f'Profiler {self.profiler_id}. '
+                f"Profiler {self.profiler_id}. "
                 f'Query "{trim_and_plain_text(str(clause))}" (params: {params}) '
-                f'finished in {(end_time - start_time) * 1000} milliseconds.'
+                f"finished in {(end_time - start_time) * 1000} milliseconds."
             )
             self.logger.info(msg)
 
@@ -238,7 +238,7 @@ class SQLAlchemyQueryProfiler(BaseSQLAlchemyProfiler[QueryInfo]):
         if isinstance(stdout, Logger):
             stdout.info(data)
             return
-        with Path(stdout).open('a') as writer:
+        with Path(stdout).open("a") as writer:
             writer.write(data)
 
 
@@ -252,11 +252,11 @@ class SQLAlchemyQueryCounter(BaseSQLAlchemyProfiler[int]):
 
     def _before_exec(
         self,
-        conn: 'Connection',
-        clause: 'SQLCompiler',
-        multiparams: 'Sequence[Mapping[str, Any]]',  # noqa: F841
-        params: 'Mapping[str, Any]',
-        execution_options: 'immutabledict[str, Any]',  # noqa: F841
+        conn: "Connection",
+        clause: "SQLCompiler",
+        multiparams: "Sequence[Mapping[str, Any]]",  # noqa: F841
+        params: "Mapping[str, Any]",
+        execution_options: "immutabledict[str, Any]",  # noqa: F841
     ) -> None:
         if self._result is None:  # pragma: no cover
             self._result = 0
@@ -264,12 +264,12 @@ class SQLAlchemyQueryCounter(BaseSQLAlchemyProfiler[int]):
 
     def _after_exec(
         self,
-        conn: 'Connection',
-        clause: 'ClauseElement',
-        multiparams: 'Sequence[Mapping[str, Any]]',  # noqa: F841
-        params: 'Mapping[str, Any]',
-        execution_options: 'immutabledict[str, Any]',  # noqa: F841
-        results: 'CursorResult[Any]',
+        conn: "Connection",
+        clause: "ClauseElement",
+        multiparams: "Sequence[Mapping[str, Any]]",  # noqa: F841
+        params: "Mapping[str, Any]",
+        execution_options: "immutabledict[str, Any]",  # noqa: F841
+        results: "CursorResult[Any]",
     ) -> None:
         pass
 

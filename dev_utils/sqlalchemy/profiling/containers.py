@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from sqlalchemy.sql import ClauseElement
     from sqlalchemy.sql.compiler import Compiled
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class QueryInfo:
@@ -26,12 +26,12 @@ class QueryInfo:
     def __init__(
         self,
         *,
-        text: 'ClauseElement | Compiled',
+        text: "ClauseElement | Compiled",
         stack: list[traceback.FrameSummary],
         start_time: float,
         end_time: float,
         params_dict: dict[Any, Any],
-        results: 'CursorResult[Any]',
+        results: "CursorResult[Any]",
     ) -> None:
         self.text = trim_and_plain_text(str(text))
         self.params = params_dict

@@ -28,13 +28,13 @@ if TYPE_CHECKING:
     from sqlalchemy.orm.clsregistry import _ClsRegistryType  # type: ignore
     from sqlalchemy.orm.strategy_options import _AbstractLoad  # type: ignore
 
-    T = TypeVar('T', bound=Select[Any])
+    T = TypeVar("T", bound=Select[Any])
 
 Statement = (
-    Select[tuple['DeclarativeBase']]
-    | Update['DeclarativeBase']
-    | Delete['DeclarativeBase']
-    | Insert['DeclarativeBase']
+    Select[tuple["DeclarativeBase"]]
+    | Update["DeclarativeBase"]
+    | Delete["DeclarativeBase"]
+    | Insert["DeclarativeBase"]
 )
 
 
@@ -45,10 +45,10 @@ def get_utc_now() -> datetime.datetime:
     -------
         datetime: current datetime with UTC timezone.
     """
-    return datetime.datetime.now(zoneinfo.ZoneInfo('UTC'))
+    return datetime.datetime.now(zoneinfo.ZoneInfo("UTC"))
 
 
-def is_declarative(model: Any) -> TypeGuard['Mapper[Any]']:  # noqa: ANN401
+def is_declarative(model: Any) -> TypeGuard["Mapper[Any]"]:  # noqa: ANN401
     """Get sqlalchemy field (column) or relationship object from given model.
 
     Args
@@ -64,11 +64,11 @@ def is_declarative(model: Any) -> TypeGuard['Mapper[Any]']:  # noqa: ANN401
         any attribute from model, that can be used in queries.
     """
     try:
-        mapper: 'Mapper[Any]' = inspect(model)
+        mapper: "Mapper[Any]" = inspect(model)
     except Exception:
         return False
     else:
-        if not hasattr(mapper, 'is_mapper'):
+        if not hasattr(mapper, "is_mapper"):
             return False
         return mapper.is_mapper
 
@@ -93,10 +93,10 @@ def get_sqlalchemy_attribute(
     """
     valid_attributes = get_all_valid_queryable_attributes(model)
     if field_name not in valid_attributes:
-        valid_field = ', '.join(valid_attributes)
+        valid_field = ", ".join(valid_attributes)
         msg = (
             f'No sqlalchemy attribute "{field_name}" was found in model "{model}". '
-            f'Valid attributes for {model}: {valid_field}'
+            f"Valid attributes for {model}: {valid_field}"
         )
         raise NoModelAttributeError(msg)
     sqlalchemy_field = getattr(model, field_name)
@@ -105,7 +105,7 @@ def get_sqlalchemy_attribute(
     return sqlalchemy_field
 
 
-def get_model_classes_from_statement(stmt: Statement) -> 'Sequence[type[DeclarativeBase]]':
+def get_model_classes_from_statement(stmt: Statement) -> "Sequence[type[DeclarativeBase]]":
     """Get sqlalchemy model classes from given statement.
 
     Args
@@ -120,26 +120,26 @@ def get_model_classes_from_statement(stmt: Statement) -> 'Sequence[type[Declarat
     """
     if isinstance(stmt, Select):
         model_classes = [
-            col_desc['entity'] for col_desc in stmt.column_descriptions if col_desc['entity']
+            col_desc["entity"] for col_desc in stmt.column_descriptions if col_desc["entity"]
         ]
         for _from_clause in stmt._from_obj:  # type: ignore
             if not isinstance(_from_clause, Table):
-                msg = 'From clause without table binding was found and skipped for statement.'
+                msg = "From clause without table binding was found and skipped for statement."
                 logger.warning(msg)
                 continue
             if not is_declarative(_from_clause.entity_namespace):  # pragma: no cover
                 msg = (
                     f'Table with name "{_from_clause.name}" without Declarative model mapped '
-                    'class was found and skipped. Use declarative models.'
+                    "class was found and skipped. Use declarative models."
                 )
                 logger.error(msg)
                 raise NoDeclarativeModelError(msg)
             model_classes.append(_from_clause.entity_namespace)
         return list(set(model_classes))
-    return [stmt.entity_description['entity']]
+    return [stmt.entity_description["entity"]]
 
 
-def get_registry_class(model: type['DeclarativeBase']) -> '_ClsRegistryType':
+def get_registry_class(model: type["DeclarativeBase"]) -> "_ClsRegistryType":
     """Get sqlalchemy registry class from any model.
 
     Args
@@ -156,9 +156,9 @@ def get_registry_class(model: type['DeclarativeBase']) -> '_ClsRegistryType':
 
 
 def get_model_class_by_tablename(
-    registry: '_ClsRegistryType',
+    registry: "_ClsRegistryType",
     tablename: str,
-) -> type['DeclarativeBase'] | None:
+) -> type["DeclarativeBase"] | None:
     """Return class reference mapped to table.
 
     Args
@@ -173,14 +173,14 @@ def get_model_class_by_tablename(
     Class reference or None.
     """
     for c in registry.values():
-        if getattr(c, '__tablename__', None) == tablename:
+        if getattr(c, "__tablename__", None) == tablename:
             return c  # type: ignore
 
 
 def get_model_class_by_name(
-    registry: '_ClsRegistryType',
+    registry: "_ClsRegistryType",
     name: str,
-) -> type['DeclarativeBase'] | None:
+) -> type["DeclarativeBase"] | None:
     """Return the model class matching `name` in the given `registry`.
 
     Args
@@ -196,11 +196,11 @@ def get_model_class_by_name(
         Optional model class.
     """
     for cls in registry.values():
-        if getattr(cls, '__name__', None) == name:
+        if getattr(cls, "__name__", None) == name:
             return cls  # type: ignore
 
 
-def get_valid_model_class_names(registry: '_ClsRegistryType') -> set[str]:
+def get_valid_model_class_names(registry: "_ClsRegistryType") -> set[str]:
     """Get sqlalchemy model names as strings from given registry.
 
     Args
@@ -216,12 +216,12 @@ def get_valid_model_class_names(registry: '_ClsRegistryType') -> set[str]:
     return set(
         filter(
             None,
-            (getattr(ele, '__name__', None) for ele in registry.values()),
+            (getattr(ele, "__name__", None) for ele in registry.values()),
         ),
     )
 
 
-def get_valid_relationships_names(model: type['DeclarativeBase']) -> set[str]:
+def get_valid_relationships_names(model: type["DeclarativeBase"]) -> set[str]:
     """Get sqlalchemy relationship names as strings from given model.
 
     Args
@@ -252,7 +252,7 @@ def get_valid_field_names(model: type["DeclarativeBase"]) -> set[str]:
     set[str]
         set of model fields as strings.
     """
-    inspect_mapper: 'Mapper[Any]' = inspect(model)  # type: ignore
+    inspect_mapper: "Mapper[Any]" = inspect(model)  # type: ignore
     columns = inspect_mapper.columns
     orm_descriptors = inspect_mapper.all_orm_descriptors
 
@@ -297,7 +297,7 @@ def get_related_models(model: type["DeclarativeBase"]) -> list[type["Declarative
     list[DeclarativeBase]
         list of related models.
     """
-    inspect_mapper: 'Mapper[Any]' = inspect(model)  # type: ignore
+    inspect_mapper: "Mapper[Any]" = inspect(model)  # type: ignore
     return [_relationship.mapper.class_ for _relationship in inspect_mapper.relationships]
 
 
@@ -336,7 +336,7 @@ def is_hybrid_method(orm_descriptor: "InspectionAttr") -> bool:
 def apply_loads(
     stmt: "T",
     *relationship_names: str,
-    load_strategy: 'Callable[[Any], _AbstractLoad]' = joinedload,
+    load_strategy: "Callable[[Any], _AbstractLoad]" = joinedload,
 ) -> "T":
     """Apply loads from string.
 
@@ -357,7 +357,7 @@ def apply_loads(
         select statement instance with applied joins.
     """
     model_classes = get_model_classes_from_statement(stmt)
-    loaders: list['_AbstractLoad'] = []
+    loaders: list["_AbstractLoad"] = []
     for relationship_ in relationship_names:
         sqlalchemy_relationship = None
         for model_ in model_classes:
@@ -366,7 +366,7 @@ def apply_loads(
         if not sqlalchemy_relationship:
             msg = (
                 f'SQLAlchemy relationship "{relationship_}" was not found in {model_classes}. '
-                'Maybe you passed incorrect relationship name or passed model name.'
+                "Maybe you passed incorrect relationship name or passed model name."
             )
             logger.error(msg)
             # TODO: add all available relationships or nearest (fuzzy search) in message.
@@ -416,7 +416,7 @@ def apply_joins(
         if not sqlalchemy_relationship:
             msg = (
                 f'SQLAlchemy relationship "{relationship_}" was not found in {model_classes}. '
-                'Maybe you passed incorrect relationship name or passed model name.'
+                "Maybe you passed incorrect relationship name or passed model name."
             )
             logger.error(msg)
             # TODO: add all available relationships or nearest (fuzzy search) in message.

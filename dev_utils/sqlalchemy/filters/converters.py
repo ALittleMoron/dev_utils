@@ -39,14 +39,14 @@ AnyLookupMapping = LookupMapping | LookupMappingWithNested
 
 empty_nested_filter_names: NestedFilterNames = set()
 django_nested_filter_names: NestedFilterNames = {
-    'exact',
-    'iexact',
-    'in',
-    'gt',
-    'gte',
-    'lt',
-    'lte',
-    'range',
+    "exact",
+    "iexact",
+    "in",
+    "gt",
+    "gte",
+    "lt",
+    "lte",
+    "range",
 }
 
 
@@ -62,7 +62,7 @@ def execute_operator_function(  # noqa: ANN201
     subproduct_use.
     """
     function_signature = signature(func)
-    if function_signature.parameters.get('subproduct_use'):
+    if function_signature.parameters.get("subproduct_use"):
         return func(a, b, subproduct_use=subproduct_use)
     # function has no subproduct_use param.
     return func(a, b)
@@ -166,7 +166,7 @@ class BaseFilterConverter(ABC, Abstract):
                 continue
             is_valid, message = cls._is_filter_valid(model, filter_)
             if not is_valid:
-                msg = f'Filter with data {filter_} is not valid: {message}'
+                msg = f"Filter with data {filter_} is not valid: {message}"
                 raise FilterError(msg)
             result.extend(cls._convert_filter(model, filter_))
         return result
@@ -175,7 +175,7 @@ class BaseFilterConverter(ABC, Abstract):
     @final
     def _recursive_apply_operator(
         cls,
-        model: 'type[DeclarativeBase]',
+        model: "type[DeclarativeBase]",
         field_name: str,
         parent_lookup: str,
         value: Any,  # noqa: ANN401
@@ -243,7 +243,7 @@ class SimpleFilterConverter(BaseFilterConverter):
         for field_name in filter_:
             if field_name not in get_valid_field_names(model):
                 return False, f'Model or select statement {model} has no field "{field_name}".'
-        return True, ''
+        return True, ""
 
     @classmethod
     def _convert_filter(
@@ -274,15 +274,15 @@ class AdvancedOperatorFilterConverter(BaseFilterConverter):
     """
 
     lookup_mapping: LookupMapping = {  # type: ignore
-        '=': builtin_operator.eq,
-        '>': builtin_operator.gt,
-        '<': builtin_operator.lt,
-        '>=': builtin_operator.ge,
-        '<=': builtin_operator.le,
-        'is': custom_operator.is_,
-        'is_not': custom_operator.is_not,
-        'between': custom_operator.between,
-        'contains': custom_operator.contains,
+        "=": builtin_operator.eq,
+        ">": builtin_operator.gt,
+        "<": builtin_operator.lt,
+        ">=": builtin_operator.ge,
+        "<=": builtin_operator.le,
+        "is": custom_operator.is_,
+        "is_not": custom_operator.is_not,
+        "between": custom_operator.between,
+        "contains": custom_operator.contains,
         # TODO: add values validation for operators.
         # For example, for between - only two values in Sequence, otherwise FilterError.
     }
@@ -294,25 +294,25 @@ class AdvancedOperatorFilterConverter(BaseFilterConverter):
         filter_: FilterDict,
     ) -> tuple[IsValid, Message]:
         if not is_dict_simple_filter_dict(filter_):
-            return False, 'filter dict is not subtype of OperatorFilterDict.'
-        field = filter_['field']
+            return False, "filter dict is not subtype of OperatorFilterDict."
+        field = filter_["field"]
         if field not in get_valid_field_names(model):
             return False, f'Model or select statement {model} has no field "{field}".'
-        return True, ''
+        return True, ""
 
     @classmethod
     def _convert_filter(
         cls,
         model: type["DeclarativeBase"],
         filter_: FilterDict,
-    ) -> 'Sequence[SQLAlchemyFilter]':
+    ) -> "Sequence[SQLAlchemyFilter]":
         if not is_dict_simple_filter_dict(filter_):
             msg = "Never situation. Don't use _convert_filter method directly!"
             raise FilterError(msg)
-        operator_str = filter_.get('operator', '=')
+        operator_str = filter_.get("operator", "=")
         operator_func = cls.lookup_mapping[operator_str]
-        sqlalchemy_field = get_sqlalchemy_attribute(model, filter_['field'])
-        return [operator_func(sqlalchemy_field, filter_['value'])]
+        sqlalchemy_field = get_sqlalchemy_attribute(model, filter_["field"])
+        return [operator_func(sqlalchemy_field, filter_["value"])]
 
 
 class DjangoLikeFilterConverter(BaseFilterConverter):
@@ -331,36 +331,36 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
     """
 
     lookup_mapping: LookupMappingWithNested = {  # type: ignore
-        'exact': (custom_operator.django_exact, empty_nested_filter_names),
-        'iexact': (custom_operator.django_iexact, empty_nested_filter_names),
-        'contains': (custom_operator.django_contains, empty_nested_filter_names),
-        'icontains': (custom_operator.django_icontains, empty_nested_filter_names),
-        'in': (custom_operator.django_in, empty_nested_filter_names),
-        'gt': (builtin_operator.gt, empty_nested_filter_names),
-        'gte': (builtin_operator.ge, empty_nested_filter_names),
-        'lt': (builtin_operator.lt, empty_nested_filter_names),
-        'lte': (builtin_operator.le, empty_nested_filter_names),
-        'startswith': (custom_operator.django_startswith, empty_nested_filter_names),
-        'istartswith': (custom_operator.django_istartswith, empty_nested_filter_names),
-        'endswith': (custom_operator.django_endswith, empty_nested_filter_names),
-        'iendswith': (custom_operator.django_iendswith, empty_nested_filter_names),
-        'range': (custom_operator.django_range, empty_nested_filter_names),
-        'date': (custom_operator.django_date, django_nested_filter_names),
-        'year': (custom_operator.django_year, django_nested_filter_names),
-        'iso_year': (custom_operator.django_iso_year, django_nested_filter_names),
-        'month': (custom_operator.django_month, django_nested_filter_names),
-        'day': (custom_operator.django_day, django_nested_filter_names),
-        'week': (custom_operator.django_week, django_nested_filter_names),
-        'week_day': (custom_operator.django_week_day, django_nested_filter_names),
-        'iso_week_day': (custom_operator.django_iso_week_day, django_nested_filter_names),
-        'quarter': (custom_operator.django_quarter, django_nested_filter_names),
-        'time': (custom_operator.django_time, django_nested_filter_names),
-        'hour': (custom_operator.django_hour, django_nested_filter_names),
-        'minute': (custom_operator.django_minute, django_nested_filter_names),
-        'second': (custom_operator.django_second, django_nested_filter_names),
-        'isnull': (custom_operator.django_isnull, empty_nested_filter_names),
-        'regex': (custom_operator.django_regex, empty_nested_filter_names),
-        'iregex': (custom_operator.django_iregex, empty_nested_filter_names),
+        "exact": (custom_operator.django_exact, empty_nested_filter_names),
+        "iexact": (custom_operator.django_iexact, empty_nested_filter_names),
+        "contains": (custom_operator.django_contains, empty_nested_filter_names),
+        "icontains": (custom_operator.django_icontains, empty_nested_filter_names),
+        "in": (custom_operator.django_in, empty_nested_filter_names),
+        "gt": (builtin_operator.gt, empty_nested_filter_names),
+        "gte": (builtin_operator.ge, empty_nested_filter_names),
+        "lt": (builtin_operator.lt, empty_nested_filter_names),
+        "lte": (builtin_operator.le, empty_nested_filter_names),
+        "startswith": (custom_operator.django_startswith, empty_nested_filter_names),
+        "istartswith": (custom_operator.django_istartswith, empty_nested_filter_names),
+        "endswith": (custom_operator.django_endswith, empty_nested_filter_names),
+        "iendswith": (custom_operator.django_iendswith, empty_nested_filter_names),
+        "range": (custom_operator.django_range, empty_nested_filter_names),
+        "date": (custom_operator.django_date, django_nested_filter_names),
+        "year": (custom_operator.django_year, django_nested_filter_names),
+        "iso_year": (custom_operator.django_iso_year, django_nested_filter_names),
+        "month": (custom_operator.django_month, django_nested_filter_names),
+        "day": (custom_operator.django_day, django_nested_filter_names),
+        "week": (custom_operator.django_week, django_nested_filter_names),
+        "week_day": (custom_operator.django_week_day, django_nested_filter_names),
+        "iso_week_day": (custom_operator.django_iso_week_day, django_nested_filter_names),
+        "quarter": (custom_operator.django_quarter, django_nested_filter_names),
+        "time": (custom_operator.django_time, django_nested_filter_names),
+        "hour": (custom_operator.django_hour, django_nested_filter_names),
+        "minute": (custom_operator.django_minute, django_nested_filter_names),
+        "second": (custom_operator.django_second, django_nested_filter_names),
+        "isnull": (custom_operator.django_isnull, empty_nested_filter_names),
+        "regex": (custom_operator.django_regex, empty_nested_filter_names),
+        "iregex": (custom_operator.django_iregex, empty_nested_filter_names),
     }
 
     @classmethod
@@ -370,20 +370,20 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
         filter_: FilterDict,
     ) -> tuple[IsValid, Message]:
         for field in filter_:
-            field_parts = field.split('__')
+            field_parts = field.split("__")
             if len(field_parts) == 1:
                 field_name = field_parts[0]
-                lookup = 'exact'
+                lookup = "exact"
                 rest_lookups: list[str] = []
             else:
                 field_name, lookup, *rest_lookups = field_parts
             if not all(rest_lookup in cls.lookup_mapping for rest_lookup in rest_lookups):
-                rest_lookups_str = ', '.join(rest_lookups)
+                rest_lookups_str = ", ".join(rest_lookups)
                 msg = (
-                    f'Not all sub-lookups ({rest_lookups_str}) are in cls.lookup_mapping keys. '
-                    'Perhaps, you tried to pass related model name to filter by it. Not it is not '
-                    'possible. Use sub-lookups only for filtering inside main model (like '
-                    'field__hour__gt=12 or something like this)'
+                    f"Not all sub-lookups ({rest_lookups_str}) are in cls.lookup_mapping keys. "
+                    "Perhaps, you tried to pass related model name to filter by it. Not it is not "
+                    "possible. Use sub-lookups only for filtering inside main model (like "
+                    "field__hour__gt=12 or something like this)"
                 )
                 raise FilterError(msg)
             # FIXME: add validation for value for lookup (like, no integer for field__date filter)
@@ -391,9 +391,9 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
                 return False, f'Model or select statement {model} has no field "{field_name}".'
             if lookup not in cls.lookup_mapping:
                 all_lookup_mapping = list(cls.lookup_mapping.keys())
-                message = f'Unexpected lookup "{lookup}".' f'Valid lookups: {all_lookup_mapping}.'
+                message = f'Unexpected lookup "{lookup}".' f"Valid lookups: {all_lookup_mapping}."
                 return False, message
-        return True, ''
+        return True, ""
 
     @classmethod
     def _convert_filter(
@@ -403,11 +403,11 @@ class DjangoLikeFilterConverter(BaseFilterConverter):
     ) -> Sequence[SQLAlchemyFilter]:
         sqlalchemy_filters: Sequence[SQLAlchemyFilter] = []
         for field, value in filter_.items():
-            field_parts = field.split('__')
+            field_parts = field.split("__")
             # TODO: add filtering by relationships.
             if len(field_parts) == 1:
                 field_name = field_parts[0]
-                lookup = 'exact'
+                lookup = "exact"
                 rest_lookups: list[str] = []
             else:
                 field_name, lookup, *rest_lookups = field_parts
