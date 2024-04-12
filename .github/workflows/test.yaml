@@ -24,10 +24,6 @@ on:
         default: 60
 
 
-permissions:
-  contents: write
-  pages: write
-
 jobs:
   test:
     timeout-minutes: ${{ inputs.timeout }}
