@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
 
+permissions:
+  contents: read
+  pages: write
+
 jobs:
   test:
     name: "Test (${{ matrix.python-version }}"
