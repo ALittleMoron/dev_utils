@@ -8,6 +8,29 @@
 I made this project to avoid copy-pasting with utils in my projects. I was aiming to simplify
 working with sqlalchemy, FastAPI and other libs.
 
+## Install
+
+Package has optional dependencies, so if you use it in some specific cases, install only needed
+dependencies.
+
+For profiling:
+
+```bash
+pip install "python-dev-utils[profiling]"
+```
+
+For SQLAlchemy filters:
+
+```bash
+pip install "python-dev-utils[sqlalchemy_filters]"
+```
+
+For FastAPI verbose HTTP exceptions:
+
+```bash
+pip install "python-dev-utils[fastapi_exceptions]"
+```
+
 ## Profiling
 
 Profiling utils. Now available 2 profilers and 2 middlewares (FastAPI) for such profilers:
@@ -33,7 +56,7 @@ or list of dicts. There is no difference), which converts to SQLAlchemy filters 
 ``` python
 filter_spec = [
     {'field_name_1': 123, 'field_name_2': 'value'},
-    {'other_name_1': 'other_name', 'other_name_2': 123},
+    {'other_name_1': 'other_value', 'other_name_2': 123},
     # ...
 ]
 ```
@@ -43,6 +66,31 @@ No other specific usages presents. it is simple.
 ### Advanced filters
 
 Advanced filters continues the idea of simple-filter, but add operator key.
+
+```python
+{
+    "field": "my_field",
+    "value": 25,
+    "operator": ">",
+}
+```
+
+or
+
+```python
+[
+    {
+        "field": "my_id_field",
+        "value": [1,2,3,4,5],
+        "operator": "contains",
+    },
+    {
+        "field": "my_bool_field",
+        "value": False,
+        "operator": "is_not",
+    },
+]
+```
 
 This is the list of operators that can be used:
 
@@ -58,9 +106,11 @@ This is the list of operators that can be used:
 
 ### Django filters
 
-Django filters implements django ORM adapter for filters.
+Django filters implements django ORM adapter for filters. You can use filters like
+`my_field__iexact=25` or `my_dt_field__date__ge=datetime.date(2023, 3, 12)`. See django
+documentation for more information.
 
-Now implements all field filters, except nester models.
+Now implements all field filters, except nester relationships.
 
 This is the list of operators that can be used:
 
@@ -94,3 +144,64 @@ This is the list of operators that can be used:
 - `isnull`
 - `regex`
 - `iregex`
+
+## FastAPI Verbose HTTP exceptions
+
+Verbose exceptions with single format. This utils was inspired by
+[drf-exceptions-hog](https://github.com/PostHog/drf-exceptions-hog), but implemented for FastAPI.
+
+To work with this util you must add exception handlers in your FastAPI project like this:
+
+```python
+from fastapi import FastAPI
+from dev_utils.fastapi.verbose_http_exceptions.handlers import (
+    apply_verbose_http_exception_handler,
+    apply_all_handlers,
+)
+
+app = FastAPI()
+apply_all_handlers(app)
+# or
+apply_verbose_http_exception_handler(app)
+# See document-strings of functions for more information.
+```
+
+Then all (or some specific part of) your exceptions will be returned to users in JSON like this:
+
+```json
+{
+    "code": "validation_error",
+    "type": "literal_error",
+    "message": "Input should be 1 or 2",
+    "attr": "a",
+    "location": "query",
+}
+```
+
+or this (multiple exceptions supported too):
+
+```json
+{
+    "code": "multiple",
+    "type": "multiple",
+    "message": "Multiple exceptions ocurred. Please check list for details.",
+    "attr": null,
+    "location": null,
+    "nested_errors": [
+        {
+            "code": "validation_error",
+            "type": "literal_error",
+            "message": "Input should be 1 or 2",
+            "attr": "a",
+            "location": "query",
+        },
+        {
+            "code": "validation_error",
+            "type": "missing",
+            "message": "Field required",
+            "attr": "b",
+            "location": "query",
+        }
+    ]
+}
+```

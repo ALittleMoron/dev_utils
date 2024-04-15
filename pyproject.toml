@@ -152,7 +152,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "1.0.6"
+version = "1.1.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"
@@ -161,6 +161,7 @@ license = { text = "MIT" }
 dependencies = []
 
 [project.optional-dependencies]
+fastapi_exceptions = ["fastapi>=0.110.0"]
 profiling = ["fastapi>=0.110.0", "sqlalchemy>=2.0.28"]
 sqlalchemy_filters = ["sqlalchemy>=2.0.28"]
 
