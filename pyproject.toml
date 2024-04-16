@@ -67,6 +67,7 @@ max-complexity = 11
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
 [tool.ruff.lint.extend-per-file-ignores]
+"typings/*" = ["ANN401"]
 "__init__.py" = ["F401"]
 "*/migrations/versions/*" = ["D103"]
 "src/app/main.py" = ["E402"]
@@ -152,7 +153,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "1.1.0"
+version = "1.2.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"

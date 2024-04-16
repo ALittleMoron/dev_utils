@@ -50,12 +50,12 @@ django_nested_filter_names: NestedFilterNames = {
 }
 
 
-def execute_operator_function(  # noqa: ANN201
+def execute_operator_function(
     func: OperatorFunction,
     a: Any,  # noqa: ANN401
     b: Any,  # noqa: ANN401
     subproduct_use: bool = False,  # noqa: FBT001, FBT002
-):
+) -> Any:  # noqa: ANN401
     """Call given operator function with checking for ``subproduct_use`` signature.
 
     Simple wrapper to not execute function every time with checking, that operator has
