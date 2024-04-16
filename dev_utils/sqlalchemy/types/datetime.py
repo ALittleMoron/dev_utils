@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 UTC = zoneinfo.ZoneInfo("UTC")
 
 
-class Utcnow(expression.FunctionElement):  # type: ignore
+class Utcnow(expression.FunctionElement[datetime.datetime]):
     """Alias for DateTime type for new mapping.
 
     Needs to avoid incorrect type mapping (use only Utcnow type, not all DateTime columns).

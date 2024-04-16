@@ -36,7 +36,6 @@ def execute_operator_function(
 ) -> Any: ...
 
 class BaseFilterConverter(ABC, Abstract):
-
     lookup_mapping: AnyLookupMapping = ...
     @classmethod
     @final
