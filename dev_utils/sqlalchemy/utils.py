@@ -4,9 +4,7 @@ Contains functions, which inspect models, apply joins, apply options and wrap so
 functionality.
 """
 
-import datetime
 import types
-import zoneinfo
 from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar
 
 from sqlalchemy import Delete, Insert, Select, Table, Update, inspect
@@ -36,16 +34,6 @@ Statement = (
     | Delete["DeclarativeBase"]
     | Insert["DeclarativeBase"]
 )
-
-
-def get_utc_now() -> datetime.datetime:
-    """Get current UTC datetime.
-
-    Returns
-    -------
-        datetime: current datetime with UTC timezone.
-    """
-    return datetime.datetime.now(zoneinfo.ZoneInfo("UTC"))
 
 
 def is_declarative(model: Any) -> TypeGuard["Mapper[Any]"]:  # noqa: ANN401

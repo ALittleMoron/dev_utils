@@ -2,13 +2,15 @@ import datetime
 import random
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from pydantic import BaseModel
 from sqlalchemy import ForeignKey, inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy_utils import create_database, database_exists, drop_database  # type: ignore
 
-from dev_utils.sqlalchemy.types.datetime import UTCDateTime  # type: ignore
+from dev_utils.sqlalchemy.types.datetime import UTCDateTime
+from dev_utils.sqlalchemy.types.pydantic import PydanticType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -186,6 +188,12 @@ async def create_db_item_async(
     return item
 
 
+class PydanticTestSchema(BaseModel):  # noqa: D101
+    a: int
+    b: int
+    c: int
+
+
 class Base(DeclarativeBase):  # noqa
     pass
 
@@ -232,3 +240,4 @@ class TableWithUTCDT(Base):  # noqa: D101
 
     id: Mapped[int] = mapped_column(primary_key=True)  # noqa
     dt_field: Mapped[datetime.datetime] = mapped_column(UTCDateTime)
+    pydantic_field: Mapped[PydanticTestSchema] = mapped_column(PydanticType(PydanticTestSchema))

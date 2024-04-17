@@ -1,25 +1,13 @@
-import datetime
-import zoneinfo
 from collections.abc import Sequence
 from typing import Any
 
 import pytest
-from freezegun import freeze_time
 from sqlalchemy import delete, func, insert, inspect, select, update
 from sqlalchemy.orm import DeclarativeBase, joinedload, selectinload, subqueryload
 
 from dev_utils.core.exc import NoModelAttributeError, NoModelRelationshipError
 from dev_utils.sqlalchemy import utils
-from tests.utils import Base, MyModel, OtherModel, generate_datetime_list
-
-
-@pytest.mark.parametrize(
-    "dt",
-    generate_datetime_list(n=10, tz=zoneinfo.ZoneInfo("UTC")),
-)
-def test_get_utc_now(dt: datetime.datetime) -> None:  # noqa
-    with freeze_time(dt):
-        assert utils.get_utc_now() == dt
+from tests.utils import Base, MyModel, OtherModel
 
 
 @pytest.mark.parametrize(

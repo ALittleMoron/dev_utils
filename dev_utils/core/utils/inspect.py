@@ -1,3 +1,8 @@
+"""Module with objects core utils.
+
+Contains functions to inspect objects or extract information from them
+"""
+
 import inspect
 
 
@@ -13,11 +18,3 @@ def get_object_class_absolute_name(obj: object) -> str:
     if module == "builtins":
         return class_.__qualname__
     return module + "." + class_.__qualname__
-
-
-def trim_and_plain_text(text: str) -> str:
-    """Make text plain and trim."""
-    text = text.strip()
-    while "  " in text:
-        text = text.replace("  ", " ")
-    return text.replace("\n", " ").strip()
