@@ -5,7 +5,7 @@ functionality.
 """
 
 import types
-from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar, overload
 
 from sqlalchemy import Delete, Insert, Select, Table, Update, inspect
 from sqlalchemy.ext.hybrid import HybridExtensionType
@@ -21,7 +21,7 @@ from dev_utils.core.logging import logger
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    from sqlalchemy.orm import Mapper, QueryableAttribute
+    from sqlalchemy.orm import InstrumentedAttribute, Mapper, QueryableAttribute
     from sqlalchemy.orm.base import InspectionAttr
     from sqlalchemy.orm.clsregistry import _ClsRegistryType  # type: ignore
     from sqlalchemy.orm.strategy_options import _AbstractLoad  # type: ignore
@@ -61,9 +61,29 @@ def is_declarative(model: Any) -> TypeGuard["Mapper[Any]"]:  # noqa: ANN401
         return mapper.is_mapper
 
 
+@overload
 def get_sqlalchemy_attribute(
     model: type["DeclarativeBase"],
     field_name: str,
+    *,
+    only_columns: Literal[True],
+) -> "InstrumentedAttribute[Any]": ...
+
+
+@overload
+def get_sqlalchemy_attribute(
+    model: type["DeclarativeBase"],
+    field_name: str,
+    *,
+    only_columns: Literal[False] = False,
+) -> "QueryableAttribute[Any]": ...
+
+
+def get_sqlalchemy_attribute(
+    model: type["DeclarativeBase"],
+    field_name: str,
+    *,
+    only_columns: bool = False,
 ) -> "QueryableAttribute[Any]":
     """Get sqlalchemy field (column) or relationship object from given model.
 
@@ -73,13 +93,18 @@ def get_sqlalchemy_attribute(
         SQLAlchemy declarative model.
     field_name : str
         name of field to find in model.
+    only_columns: bool
+        get attribute only from columns.
 
     Returns
     -------
     QueryableAttribute[Any]
         any attribute from model, that can be used in queries.
     """
-    valid_attributes = get_all_valid_queryable_attributes(model)
+    if only_columns:
+        valid_attributes = get_valid_field_names(model)
+    else:
+        valid_attributes = get_all_valid_queryable_attributes(model)
     if field_name not in valid_attributes:
         valid_field = ", ".join(valid_attributes)
         msg = (
