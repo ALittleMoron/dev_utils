@@ -17,11 +17,12 @@ if TYPE_CHECKING:
 @pytest.fixture()
 def test_app_only_verbose() -> "Generator[TestClient, None, None]":
     app = FastAPI()
-    apply_verbose_http_exception_handler(app)
 
     @app.get("/")
     def index():  # type: ignore  # noqa: ANN202
         raise ServerErrorVerboseHTTPException(reason="test")
+
+    apply_verbose_http_exception_handler(app)
 
     with TestClient(
         app=app,
@@ -33,7 +34,6 @@ def test_app_only_verbose() -> "Generator[TestClient, None, None]":
 @pytest.fixture()
 def test_app_all_verbose() -> "Generator[TestClient, None, None]":
     app = FastAPI()
-    apply_all_handlers(app)
 
     @app.get("/")
     def index(a: Literal[1, 2], b: Literal[25]):  # type: ignore  # noqa: ANN202
@@ -46,6 +46,8 @@ def test_app_all_verbose() -> "Generator[TestClient, None, None]":
     @app.get("/verbose_error")
     def verbose_error():  # type: ignore  # noqa: ANN202
         raise ServerErrorVerboseHTTPException(reason="test")
+
+    apply_all_handlers(app)
 
     with TestClient(
         app=app,

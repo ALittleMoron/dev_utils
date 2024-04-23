@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 expected_error_422_result = {
     "code": "multiple",
     "type": "multiple",
-    "message": "Multiple exceptions ocurred. Please check list for details.",
+    "message": "Multiple errors ocurred. Please check list for nested_errors.",
     "attr": None,
     "location": None,
     "nested_errors": [

@@ -31,6 +31,12 @@ For FastAPI verbose HTTP exceptions:
 pip install "python-dev-utils[fastapi_exceptions]"
 ```
 
+For extract OpenAPI cli.
+
+```bash
+pip install "python-dev-utils[extract_openapi]"
+```
+
 ## Profiling
 
 Profiling utils. Now available 2 profilers and 2 middlewares (FastAPI) for such profilers:
@@ -205,3 +211,24 @@ or this (multiple exceptions supported too):
     ]
 }
 ```
+
+`apply_all_handler` function also has `override_422_openapi` param (default True). You can turn
+it off to avoid overriding 422 errors in your application OpenAPI schema.
+
+## Export OpenAPI
+
+If you want to export your OpenAPI schema from FastAPI application via CLI, you can use
+OpenAPI exporter from this package.
+
+```bash
+python3 -m dev_utils.fastapi.openapi.exporter \
+    "main:app" \
+    --app-dir "my/path/to/main" \
+    --out "custom_name.json"
+```
+
+CLI params:
+
+- `"main:app"` - path to app with format "file_name:name_of_app_var"
+- `--app-dir`  - directory of app file contains.
+- `--out`      - custom file name and format (JSON and YAML available).

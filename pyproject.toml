@@ -106,12 +106,13 @@ multi_line_output = 3
 [tool.coverage.run]
 source = ["sqlrepo"]
 branch = true
-omit = ['']
+omit = ["dev_utils/fastapi/openapi/*", "*/__init__.py"]
 
 [tool.coverage.report]
 exclude_lines = [
     "enum.Enum",
-    "(Protocol)",
+    "(Protocol):",
+    "(typing.Protocol):",
     "pragma: no cover",
     "pragma: no coverage",
     "raise NotImplementedError",
@@ -154,7 +155,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "1.3.1"
+version = "1.4.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"
@@ -163,9 +164,10 @@ license = { text = "MIT" }
 dependencies = []
 
 [project.optional-dependencies]
-fastapi_exceptions = ["fastapi>=0.110.0"]
-profiling = ["fastapi>=0.110.0", "sqlalchemy>=2.0.28"]
+fastapi_exceptions = ["fastapi"]
+profiling = ["fastapi", "sqlalchemy>=2.0.28"]
 sqlalchemy_filters = ["sqlalchemy>=2.0.28"]
+extract_openapi = ["fastapi", "uvicorn"]
 
 [build-system]
 requires = ["pdm-backend"]

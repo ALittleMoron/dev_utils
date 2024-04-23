@@ -23,21 +23,36 @@ def test_is_declarative(obj: Any, expected_result: bool) -> None:  # noqa: D103,
 
 
 @pytest.mark.parametrize(
-    ("field", "expected_result"),
+    ("field", "only_columns", "expected_result"),
     [
-        ("id", MyModel.id),
-        ("name", MyModel.name),
-        ("full_name", MyModel.full_name),
-        ("get_full_name", MyModel.get_full_name()),
+        ("id", False, MyModel.id),
+        ("id", True, MyModel.id),
+        ("name", False, MyModel.name),
+        ("name", True, MyModel.name),
+        ("full_name", False, MyModel.full_name),
+        ("get_full_name", False, MyModel.get_full_name()),
     ],
 )
-def test_get_sqlalchemy_attribute(field: str, expected_result: Any) -> None:  # noqa
-    assert str(utils.get_sqlalchemy_attribute(MyModel, field)) == str(expected_result)
+def test_get_sqlalchemy_attribute(
+    field: str,
+    only_columns: bool,  # noqa: FBT001
+    expected_result: Any,  # noqa: ANN401
+) -> None:  # noqa
+    assert str(
+        utils.get_sqlalchemy_attribute(MyModel, field, only_columns=only_columns),  # type: ignore
+    ) == str(expected_result)
 
 
-def test_get_sqlalchemy_attribute_incorrect() -> None:  # noqa
+@pytest.mark.parametrize(
+    ("field", "only_columns"),
+    [
+        ('incorrect_field', False),
+        ('incorrect_field', True),
+    ],
+)
+def test_get_sqlalchemy_attribute_incorrect(field: str, only_columns: bool) -> None:  # noqa
     with pytest.raises(NoModelAttributeError):
-        utils.get_sqlalchemy_attribute(MyModel, "incorrect_field")
+        utils.get_sqlalchemy_attribute(MyModel, field, only_columns=only_columns)  # type: ignore
 
 
 def test_get_registry_class() -> None:  # noqa

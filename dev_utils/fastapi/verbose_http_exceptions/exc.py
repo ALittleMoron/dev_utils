@@ -8,9 +8,10 @@ from fastapi import HTTPException, status
 
 from dev_utils.core.abstract import Abstract, abstract_class_property
 from dev_utils.core.utils import get_object_class_absolute_name
-
-ABSTRACT_PROPERTY_DEFAULT_VALUE = "<abstract property>"
-ABSTRACT_CLS_DEFAULT_VALUE = "<class with abstract properties>"
+from dev_utils.fastapi.verbose_http_exceptions.constants import (
+    ABSTRACT_CLS_DEFAULT_VALUE,
+    ABSTRACT_PROPERTY_DEFAULT_VALUE,
+)
 
 
 class VerboseHTTPExceptionDict(TypedDict):
@@ -312,7 +313,7 @@ class NestedErrorsMainHTTPException(BaseVerboseHTTPException):
 
     code = "multiple"
     type_ = "multiple"
-    message = "Multiple exceptions ocurred. Please check list for details."
+    message = "Multiple errors ocurred. Please check list for nested_errors."
 
 
 class InfoVerboseHTTPException(BaseVerboseHTTPException):
