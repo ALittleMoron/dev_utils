@@ -155,7 +155,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "1.4.0"
+version = "1.5.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"
@@ -168,6 +168,7 @@ fastapi_exceptions = ["fastapi"]
 profiling = ["fastapi", "sqlalchemy>=2.0.28"]
 sqlalchemy_filters = ["sqlalchemy>=2.0.28"]
 extract_openapi = ["fastapi", "uvicorn"]
+migration_numbering = ["alembic"]
 
 [build-system]
 requires = ["pdm-backend"]

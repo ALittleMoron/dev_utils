@@ -6,7 +6,8 @@ from dev_utils.core.utils import get_object_class_absolute_name
 from dev_utils.sqlalchemy.utils import is_declarative
 
 if TYPE_CHECKING:
-    from sqlalchemy.orm import DeclarativeBase, Mapper
+    from sqlalchemy.orm.decl_api import DeclarativeBase
+    from sqlalchemy.orm.mapper import Mapper
 
 
 class BaseModelMixin:

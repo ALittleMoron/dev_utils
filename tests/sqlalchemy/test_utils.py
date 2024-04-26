@@ -1,13 +1,24 @@
+import datetime
 from collections.abc import Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from sqlalchemy import delete, func, insert, inspect, select, update
-from sqlalchemy.orm import DeclarativeBase, joinedload, selectinload, subqueryload
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Session,
+    joinedload,
+    load_only,
+    selectinload,
+    subqueryload,
+)
 
 from dev_utils.core.exc import NoModelAttributeError, NoModelRelationshipError
 from dev_utils.sqlalchemy import utils
 from tests.utils import Base, MyModel, OtherModel
+
+if TYPE_CHECKING:
+    from tests.types import SyncFactoryFunctionProtocol
 
 
 @pytest.mark.parametrize(
@@ -20,6 +31,64 @@ from tests.utils import Base, MyModel, OtherModel
 )
 def test_is_declarative(obj: Any, expected_result: bool) -> None:  # noqa: D103, ANN401, FBT001
     assert utils.is_declarative(obj) == expected_result
+
+
+def test_get_unloaded_fields(
+    db_sync_session: "Session",
+    mymodel_sync_factory: "SyncFactoryFunctionProtocol[MyModel]",
+) -> None:
+    mymodel_sync_factory(db_sync_session)
+    selected_with_unload = db_sync_session.scalar(
+        select(MyModel).options(load_only(MyModel.bl), selectinload(MyModel.other_models)),
+    )
+    assert selected_with_unload is not None, "model not found (but should be presented in db)"
+    assert utils.get_unloaded_fields(selected_with_unload) == {"name", "other_name", "dt"}
+
+
+@pytest.mark.parametrize(
+    ("exclude", "data", "expected_result"),
+    [
+        (
+            None,
+            dict(
+                id=1,
+                name="name",
+                other_name="other_name",
+                dt=datetime.datetime(2023, 5, 25, 12, 25, 25, tzinfo=datetime.UTC),
+                bl=True,
+            ),
+            dict(
+                id=1,
+                name="name",
+                other_name="other_name",
+                dt=datetime.datetime(2023, 5, 25, 12, 25, 25, tzinfo=datetime.UTC),
+                bl=True,
+            ),
+        ),
+        (
+            {"id", "dt", "bl"},
+            dict(
+                id=1,
+                name="name",
+                other_name="other_name",
+                dt=datetime.datetime(2023, 5, 25, 12, 25, 25, tzinfo=datetime.UTC),
+                bl=True,
+            ),
+            dict(name="name", other_name="other_name"),
+        ),
+    ],
+)
+def test_get_model_instance_data_as_dict(
+    exclude: set[str] | None,
+    data: dict[str, Any],
+    expected_result: dict[str, Any],
+    db_sync_session: "Session",
+    mymodel_sync_factory: "SyncFactoryFunctionProtocol[MyModel]",
+) -> None:
+    instance = mymodel_sync_factory(db_sync_session, **data)
+    assert (
+        utils.get_model_instance_data_as_dict(instance=instance, exclude=exclude) == expected_result
+    )
 
 
 @pytest.mark.parametrize(
@@ -139,6 +208,16 @@ def test_get_valid_field_names() -> None:  # noqa
         "bl",
         "full_name",
         "get_full_name",
+    }
+
+
+def test_get_valid_field_names_only_columns() -> None:  # noqa
+    assert utils.get_valid_field_names(MyModel, only_columns=True) == {
+        "id",
+        "name",
+        "other_name",
+        "dt",
+        "bl",
     }
 
 

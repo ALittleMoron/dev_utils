@@ -61,6 +61,51 @@ def is_declarative(model: Any) -> TypeGuard["Mapper[Any]"]:  # noqa: ANN401
         return mapper.is_mapper
 
 
+def get_unloaded_fields(instance: "DeclarativeBase") -> set[str]:
+    """Get unloaded fields from instance.
+
+    Args
+    ----
+    instance : DeclarativeBase
+        SQLAlchemy declarative model instance.
+
+    Returns
+    -------
+    set[str]
+        set of instance fields, which were not loaded.
+    """
+    inspector = inspect(instance)
+    return inspector.unloaded
+
+
+def get_model_instance_data_as_dict(
+    instance: "DeclarativeBase",
+    exclude: set[str] | None = None,
+) -> dict[str, Any]:
+    """Get SQLAlchemy model instance data as dict.
+
+    Args
+    ----
+    instance : DeclarativeBase
+        SQLAlchemy declarative model instance.
+    exclude : set[str] | None (default None)
+        set of string fields, which must be excluded from return result.
+
+    Returns
+    -------
+    dict[str, Any]
+        dict of instance fields with values, but without fields, which were not loaded or excluded.
+    """
+    if exclude is None:
+        exclude = set()
+    exclude = exclude.union(get_unloaded_fields(instance))
+    return {
+        col.name: getattr(instance, col.name)
+        for col in instance.__table__.columns
+        if col.name not in exclude
+    }
+
+
 @overload
 def get_sqlalchemy_attribute(
     model: type["DeclarativeBase"],
@@ -250,7 +295,11 @@ def get_valid_relationships_names(model: type["DeclarativeBase"]) -> set[str]:
     return set(inspect(model).relationships.keys())
 
 
-def get_valid_field_names(model: type["DeclarativeBase"]) -> set[str]:
+def get_valid_field_names(
+    model: type["DeclarativeBase"],
+    *,
+    only_columns: bool = False,
+) -> set[str]:
     """Get sqlalchemy field names as strings from given model.
 
     It includes hybrid properties and hybrid methods, because they can be used in queries.
@@ -259,6 +308,7 @@ def get_valid_field_names(model: type["DeclarativeBase"]) -> set[str]:
     ----
     model : type[DeclarativeBase]
         SQLAlchemy declarative model.
+    only_columns : bool (Default False)
 
     Returns
     -------
@@ -270,6 +320,8 @@ def get_valid_field_names(model: type["DeclarativeBase"]) -> set[str]:
     orm_descriptors = inspect_mapper.all_orm_descriptors
 
     column_names = columns.keys()
+    if only_columns:
+        return set(column_names)
     hybrid_names = [
         key
         for key, item in orm_descriptors.items()
