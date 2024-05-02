@@ -1,6 +1,8 @@
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, TypeGuard
 
+from sqlalchemy.orm.decl_api import declarative_mixin
+
 from dev_utils.core.exc import NoDeclarativeModelError
 from dev_utils.core.utils import get_object_class_absolute_name
 from dev_utils.sqlalchemy.utils import is_declarative
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm.mapper import Mapper
 
 
+@declarative_mixin
 class BaseModelMixin:
     """Base model mixin."""
 

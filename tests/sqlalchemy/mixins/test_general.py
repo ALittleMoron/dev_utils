@@ -219,3 +219,32 @@ async def test_unload_fields_in_repr(
     assert selected_with_unload, "MyModel instance not found (but it must be in DB)"
     selected_with_unload_repr = repr(selected_with_unload)
     assert "<Not loaded>" in selected_with_unload_repr
+
+
+def test_table_name_auto() -> None:
+    class TableNameModel(
+        general_mixins.TableNameMixin,
+        ids_mixins.IntegerIDMixin,
+        Base,
+    ):  # noqa: D101
+        some_other_attr: Mapped[str]
+
+    assert TableNameModel.__tablename__ == "table_name_model"
+
+
+def test_table_name_with_app_name_auto() -> None:
+    class TableNameWithAppNameModel(
+        general_mixins.TableNameMixin,
+        ids_mixins.IntegerIDMixin,
+        Base,
+    ):  # noqa: D101
+        __join_application_prefix__ = True
+        some_other_attr: Mapped[str]
+
+    assert TableNameWithAppNameModel.__tablename__ == "test_general_table_name_with_app_name_model"
+    TableNameWithAppNameModel.__module__ = '__main__'
+    assert TableNameWithAppNameModel.__tablename__ == "table_name_with_app_name_model"
+    TableNameWithAppNameModel.__module__ = 'models'
+    assert TableNameWithAppNameModel.__tablename__ == "table_name_with_app_name_model"
+    TableNameWithAppNameModel.__module__ = 'users.models'
+    assert TableNameWithAppNameModel.__tablename__ == "users_table_name_with_app_name_model"

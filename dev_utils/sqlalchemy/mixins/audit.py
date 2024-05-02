@@ -1,18 +1,22 @@
 """Mixin module with audit columns of model (created_at, updated_at)."""
 
 import datetime
-import zoneinfo
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Cast, Date, Time, cast
+from sqlalchemy import Cast, Date, Time, cast, event
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, declared_attr, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm.decl_api import declarative_mixin, declared_attr
 
+from dev_utils.core.utils import get_utc_now
 from dev_utils.sqlalchemy.mixins.base import BaseModelMixin
 from dev_utils.sqlalchemy.types.datetime import UTCDateTime, Utcnow
 
-UTC = zoneinfo.ZoneInfo("UTC")
+if TYPE_CHECKING:
+    from sqlalchemy.engine import Connection
 
 
+@declarative_mixin
 class CreatedAtAuditMixin(BaseModelMixin):
     """Audit mixin with created_at column (datetime)."""
 
@@ -49,6 +53,7 @@ class CreatedAtAuditMixin(BaseModelMixin):
         return self.created_at.isoformat()
 
 
+@declarative_mixin
 class UpdatedAtAuditMixin(BaseModelMixin):
     """Audit mixin with created_at column (datetime)."""
 
@@ -89,5 +94,28 @@ class UpdatedAtAuditMixin(BaseModelMixin):
         return self.updated_at.isoformat()
 
 
+@declarative_mixin
 class AuditMixin(CreatedAtAuditMixin, UpdatedAtAuditMixin):
     """Full audit mixin with created_at and updated_at columns."""
+
+
+def add_audit_column_populate_event() -> None:
+    """Add event for audit columns to populate updated_at and ."""
+
+    def _update_created_at_on_create_listener(
+        mapper: Mapped[CreatedAtAuditMixin],  # noqa
+        connection: "Connection",  # noqa
+        target: CreatedAtAuditMixin,
+    ) -> None:
+        target.created_at = get_utc_now()
+
+    def _update_updated_at_on_update_listener(
+        mapper: Mapped[UpdatedAtAuditMixin],  # noqa
+        connection: "Connection",  # noqa
+        target: UpdatedAtAuditMixin,
+    ) -> None:
+        target.updated_at = get_utc_now()
+
+    # TODO: test all cases: insert, update, session.add (maybe, in some cases it will work bad).
+    event.listen(UpdatedAtAuditMixin, 'before_update', _update_updated_at_on_update_listener)
+    event.listen(CreatedAtAuditMixin, 'before_insert', _update_created_at_on_create_listener)

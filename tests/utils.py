@@ -11,6 +11,7 @@ from sqlalchemy_utils import create_database, database_exists, drop_database  # 
 
 from dev_utils.sqlalchemy.mixins.general import BetterReprMixin, DifferenceMixin
 from dev_utils.sqlalchemy.types.datetime import UTCDateTime
+from dev_utils.sqlalchemy.types.pydantic import PydanticType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -239,4 +240,10 @@ class TableWithUTCDT(Base):  # noqa: D101
     __tablename__ = "table_with_UTC_dt"
 
     id: Mapped[int] = mapped_column(primary_key=True)  # noqa
-    dt_field: Mapped[datetime.datetime] = mapped_column(UTCDateTime)
+    dt_field: Mapped[datetime.datetime | None] = mapped_column(UTCDateTime)
+    pydantic_type: Mapped[PydanticTestSchema | None] = mapped_column(
+        PydanticType(PydanticTestSchema),
+    )
+    pydantic_list_type: Mapped[list[PydanticTestSchema] | None] = mapped_column(
+        PydanticType(list[PydanticTestSchema]),
+    )

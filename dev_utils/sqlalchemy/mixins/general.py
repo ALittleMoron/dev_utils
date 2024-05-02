@@ -1,4 +1,7 @@
+import re
 from typing import TYPE_CHECKING, Any, ClassVar, TypeAlias
+
+from sqlalchemy.orm.decl_api import declarative_mixin, declared_attr
 
 from dev_utils.core.logging import logger
 from dev_utils.core.utils.inspect import get_object_class_absolute_name
@@ -15,6 +18,7 @@ if TYPE_CHECKING:
     DictStrAny: TypeAlias = dict[str, Any]
 
 
+@declarative_mixin
 class DictConverterMixin(BaseModelMixin):
     """Mixin for converting models to dict."""
 
@@ -49,6 +53,7 @@ class DictConverterMixin(BaseModelMixin):
         return item
 
 
+@declarative_mixin
 class DifferenceMixin(BaseModelMixin):
     """Mixin for checking difference between instance and other objects.
 
@@ -138,6 +143,7 @@ class DifferenceMixin(BaseModelMixin):
         raise TypeError(msg)
 
 
+@declarative_mixin
 class BetterReprMixin(BaseModelMixin):
     """Mixin with better __repr__ method for SQLAlchemy model instances."""
 
@@ -169,3 +175,45 @@ class BetterReprMixin(BaseModelMixin):
         )
         values_pairs = ", ".join(values_pairs_list)
         return f"{class_name}({values_pairs})"
+
+
+@declarative_mixin
+class TableNameMixin(BaseModelMixin):
+    """Mixin for auto-creation of model table name (__tablename__).
+
+    You may pass class-level attribute ``__join_application_prefix__`` to make mixin create
+    table names with application prefix. For example, if your model class ``User`` with
+    TableNameMixin is located in ``application/models/users.py`` file, your tablename will be
+    ``users_user``.
+    """
+
+    __join_application_prefix__: ClassVar[bool] = False
+
+    @classmethod
+    def _get_model_application_name(cls) -> str:
+        """Parse current model file and package context to get app name.
+
+        Analog of django table naming: ``app``_``model``.
+        """
+        if cls.__module__ == "__main__":
+            return ''
+        path_parts = cls.__module__.split('.')
+        for ele in path_parts[::-1]:
+            if ele == "models":
+                continue
+            return ele
+        return ''
+
+    @declared_attr.directive
+    @classmethod
+    def __tablename__(cls) -> str:
+        """Infer table name from class name."""
+        name = cls.__name__
+        name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+        name = re.sub('__([A-Z])', r'_\1', name)
+        name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
+        if cls.__join_application_prefix__ and (
+            (application_name := cls._get_model_application_name()) != ""
+        ):
+            return f'{application_name}_{name.lower()}'
+        return name.lower()

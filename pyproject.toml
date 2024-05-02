@@ -150,12 +150,13 @@ dev = [
     "asyncpg>=0.29.0",
     "pytest-asyncio>=0.23.6",
     "httpx>=0.27.0",
+    "pytest-mock>=3.14.0",
 ]
 
 
 [project]
 name = "python_dev_utils"
-version = "1.6.0"
+version = "1.7.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"

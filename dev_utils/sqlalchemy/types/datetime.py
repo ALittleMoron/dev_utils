@@ -39,8 +39,10 @@ class UTCDateTime(TypeDecorator[datetime.datetime]):
         value: "datetime.datetime | None",
         dialect: "Dialect",  # noqa
     ) -> "datetime.datetime | None":
-        if isinstance(value, datetime.datetime) and value.tzinfo is None:
-            return value.replace(tzinfo=UTC)
+        if value is None:
+            return value
+        if value.tzinfo is None:
+            return value.replace(tzinfo=datetime.UTC)
         return value
 
     def process_bind_param(  # noqa: D102
@@ -48,9 +50,15 @@ class UTCDateTime(TypeDecorator[datetime.datetime]):
         value: "datetime.datetime | None",
         dialect: "Dialect",  # noqa
     ) -> "datetime.datetime | None":
-        if isinstance(value, datetime.datetime) and value.tzinfo is None:
-            return value.replace(tzinfo=UTC)
-        return value
+        if value is None:
+            return value
+        if value.tzinfo is None:
+            msg = (
+                f'UTCDateTime type requires the tzinfo param to be set in datetime field. '
+                f'{type(value)} was passed.'
+            )
+            raise TypeError(msg)
+        return value.astimezone(datetime.UTC)
 
 
 @compiles(Utcnow, "postgresql")

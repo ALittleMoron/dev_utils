@@ -17,6 +17,7 @@ from dev_utils.fastapi.middlewares.sqlalchemy_profiling import (
     add_query_counter_middleware,
     add_query_profiling_middleware,
 )
+from dev_utils.sqlalchemy.types.pydantic import json_serializer
 from tests.utils import (
     Base,
     MyModel,
@@ -103,7 +104,12 @@ def db_sync_engine(db_sync_url: str) -> "Generator[Engine, None, None]":
     """SQLAlchemy engine session-based fixture."""
     with suppress(SQLAlchemyError):
         create_db(db_sync_url)
-    engine = create_engine(db_sync_url, echo=False, pool_pre_ping=True)
+    engine = create_engine(
+        db_sync_url,
+        echo=False,
+        pool_pre_ping=True,
+        json_serializer=json_serializer,
+    )
     try:
         yield engine
     finally:
@@ -115,7 +121,12 @@ def db_sync_engine(db_sync_url: str) -> "Generator[Engine, None, None]":
 @pytest_asyncio.fixture(scope="session")  # type: ignore
 async def db_async_engine(db_async_url: str) -> "AsyncGenerator[AsyncEngine, None]":  # type: ignore
     """SQLAlchemy engine session-based fixture."""
-    engine = create_async_engine(db_async_url, echo=True, pool_pre_ping=True)
+    engine = create_async_engine(
+        db_async_url,
+        echo=True,
+        pool_pre_ping=True,
+        json_serializer=json_serializer,
+    )
     try:
         yield engine
     finally:

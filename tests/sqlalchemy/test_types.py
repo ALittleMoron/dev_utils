@@ -1,11 +1,17 @@
 import datetime
-import zoneinfo
 from typing import TYPE_CHECKING, Any
 
 import pytest
 from mimesis import Datetime
+from pydantic import BaseModel
+from sqlalchemy.exc import StatementError
 
-from tests.utils import TableWithUTCDT, create_db_item_sync
+from tests.utils import (
+    PydanticTestSchema,
+    TableWithUTCDT,
+    create_db_item_sync,
+    generate_datetime_list,
+)
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -13,7 +19,10 @@ if TYPE_CHECKING:
     from tests.types import SyncFactoryFunctionProtocol
 
 
-UTC = zoneinfo.ZoneInfo("UTC")
+class OtherPydanticTestSchema(BaseModel):
+    a: int
+    b: int
+    c: int
 
 
 @pytest.fixture()
@@ -26,31 +35,127 @@ def table_create(
         commit: bool = False,
         **kwargs: Any,  # noqa: ANN401
     ) -> TableWithUTCDT:
-        params: dict[str, Any] = dict(
-            dt_field=dt_faker.datetime(),
-        )
-        params.update(kwargs)
-        return create_db_item_sync(session, TableWithUTCDT, params, commit=commit)
+        return create_db_item_sync(session, TableWithUTCDT, kwargs, commit=commit)
 
     return _create
 
 
 @pytest.mark.parametrize(
-    ("dt", "tzinfo_presents"),
-    [
-        (datetime.datetime.now(), False),  # noqa: DTZ005
-        (datetime.datetime.now(tz=UTC), True),  # noqa: DTZ005
-    ],
+    "dt",
+    generate_datetime_list(n=5, tz=datetime.UTC) + [None],
 )
 def test_dt_field(
     dt: datetime.datetime,
-    tzinfo_presents: bool,
     db_sync_session: "Session",
     table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
 ) -> None:
     item = table_create(db_sync_session, dt_field=dt, commit=True)
-    if tzinfo_presents:
-        assert item.dt_field.tzinfo is not None
-        assert item.dt_field.tzinfo == UTC
-    else:
-        assert item.dt_field.tzinfo is None
+    if item.dt_field is None:
+        pytest.skip("dt_field is None (Not unexpected value).")
+    assert item.dt_field.tzinfo is not None
+    assert item.dt_field.tzinfo == datetime.UTC
+
+
+@pytest.mark.parametrize(
+    "dt",
+    generate_datetime_list(n=5),
+)
+def test_dt_field_type_error(
+    dt: datetime.datetime,
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    with pytest.raises(StatementError):
+        table_create(db_sync_session, dt_field=dt, commit=True)
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [PydanticTestSchema(a=1, b=2, c=3), PydanticTestSchema(a=4, b=5, c=6), None],
+)
+def test_pydantic_type(
+    schema: PydanticTestSchema | None,
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    item = table_create(db_sync_session, pydantic_type=schema, commit=True)
+    if item.pydantic_type is None:
+        pytest.skip("pydantic_type is None (Not unexpected value).")
+    assert isinstance(item.pydantic_type, PydanticTestSchema)
+
+
+@pytest.mark.parametrize(
+    "item",
+    [
+        "string",
+        25,
+        25.0,
+        {"a": 1, "b": 2, "c": 3},
+        [1, 2, 3],
+        [{"a": 1, "b": 2, "c": 3}],
+    ],
+)
+def test_pydantic_field_type_error(
+    item: Any,  # noqa: ANN401
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    with pytest.raises(StatementError):
+        table_create(db_sync_session, pydantic_type=item, commit=True)
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        [PydanticTestSchema(a=1, b=2, c=3)],
+        [PydanticTestSchema(a=1, b=2, c=3), PydanticTestSchema(a=4, b=5, c=6)],
+        None,
+    ],
+)
+def test_pydantic_list_type(
+    schema: list[PydanticTestSchema] | None,
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    item = table_create(db_sync_session, pydantic_list_type=schema, commit=True)
+    if item.pydantic_list_type is None:
+        pytest.skip("pydantic_list_type is None (Not unexpected value).")
+    assert isinstance(item.pydantic_list_type, list)
+    for ele in item.pydantic_list_type:
+        assert isinstance(ele, PydanticTestSchema)
+
+
+@pytest.mark.parametrize(
+    "item",
+    [
+        "string",
+        25,
+        25.0,
+        {"a": 1, "b": 2, "c": 3},
+        [1, 2, 3],
+        [{"a": 1, "b": 2, "c": 3}],
+    ],
+)
+def test_pydantic_list_field_type_error(
+    item: Any,  # noqa: ANN401
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    with pytest.raises(StatementError):
+        table_create(db_sync_session, pydantic_type=item, commit=True)
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        [OtherPydanticTestSchema(a=1, b=2, c=3)],
+        [OtherPydanticTestSchema(a=1, b=2, c=3), OtherPydanticTestSchema(a=4, b=5, c=6)],
+    ],
+)
+def test_pydantic_list_field_other_schema(
+    schema: Any,  # noqa: ANN401
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    with pytest.raises(StatementError):
+        table_create(db_sync_session, pydantic_type=schema, commit=True)

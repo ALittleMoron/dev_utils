@@ -1,11 +1,13 @@
 import uuid
 
 from sqlalchemy import UUID, BigInteger, Integer
-from sqlalchemy.orm import Mapped, declared_attr, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, synonym
+from sqlalchemy.orm.decl_api import declarative_mixin, declared_attr
 
 from dev_utils.sqlalchemy.mixins.base import BaseModelMixin
 
 
+@declarative_mixin
 class IntegerIDMixin(BaseModelMixin):
     """Integer primary key field (id) mixin."""
 
@@ -20,7 +22,13 @@ class IntegerIDMixin(BaseModelMixin):
             autoincrement=True,
         )
 
+    @declared_attr
+    def pk(cls) -> Mapped[int]:
+        """Synonym for id field."""
+        return synonym("id")
 
+
+@declarative_mixin
 class UUIDMixin(BaseModelMixin):
     """UUID primary key field (id) mixin."""
 
@@ -33,3 +41,8 @@ class UUIDMixin(BaseModelMixin):
             primary_key=True,
             default=uuid.uuid4,
         )
+
+    @declared_attr
+    def pk(cls) -> Mapped[uuid.UUID]:
+        """Synonym for id field."""
+        return synonym("id")
