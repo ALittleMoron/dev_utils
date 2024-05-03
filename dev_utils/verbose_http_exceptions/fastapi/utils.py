@@ -1,7 +1,7 @@
 from typing import Any
 
 from dev_utils.core.guards import all_elements_in_sequence_are_str
-from dev_utils.fastapi.verbose_http_exceptions.exc import RequestValidationVerboseHTTPException
+from dev_utils.verbose_http_exceptions.exc import RequestValidationVerboseHTTPException
 
 Location = str | None
 Attribute = str | None

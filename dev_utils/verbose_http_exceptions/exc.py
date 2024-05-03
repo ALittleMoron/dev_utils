@@ -4,11 +4,9 @@ from collections.abc import Sequence
 from string import Template
 from typing import Any, NotRequired, Self, TypedDict
 
-from fastapi import HTTPException, status
-
 from dev_utils.core.abstract import Abstract, abstract_class_property
 from dev_utils.core.utils import get_object_class_absolute_name
-from dev_utils.fastapi.verbose_http_exceptions.constants import (
+from dev_utils.verbose_http_exceptions.constants import (
     ABSTRACT_CLS_DEFAULT_VALUE,
     ABSTRACT_PROPERTY_DEFAULT_VALUE,
 )
@@ -25,7 +23,7 @@ class VerboseHTTPExceptionDict(TypedDict):
     nested_errors: NotRequired[list["VerboseHTTPExceptionDict"]]
 
 
-class BaseVerboseHTTPException(Abstract, HTTPException):
+class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
     """Base verbose HTTP-exception.
 
     Exception has abstract class properties, which must be set in inherited classes.
@@ -321,7 +319,7 @@ class InfoVerboseHTTPException(BaseVerboseHTTPException):
 
     __skip_abstract_raise_error__ = True
 
-    status_code = status.HTTP_100_CONTINUE
+    status_code = 100
     code = "info"
     type_ = "info"
 
@@ -331,7 +329,7 @@ class SuccessVerboseHTTPException(BaseVerboseHTTPException):
 
     __skip_abstract_raise_error__ = True
 
-    status_code = status.HTTP_200_OK
+    status_code = 200
     code = "success"
     type_ = "success"
 
@@ -341,7 +339,7 @@ class RedirectVerboseHTTPException(BaseVerboseHTTPException):
 
     __skip_abstract_raise_error__ = True
 
-    status_code = status.HTTP_302_FOUND
+    status_code = 300
     code = "redirect"
     type_ = "redirect"
 
@@ -349,7 +347,7 @@ class RedirectVerboseHTTPException(BaseVerboseHTTPException):
 class ClientVerboseHTTPException(BaseVerboseHTTPException):
     """Base client verbose error."""
 
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = 400
     code = "client_error"
     type_ = "client_error"
     message = "Unexpected client error was found."
@@ -361,14 +359,14 @@ class RequestValidationVerboseHTTPException(BaseVerboseHTTPException):
 
     __skip_abstract_raise_error__ = True
 
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = 422
     code = "validation_error"
 
 
 class ServerErrorVerboseHTTPException(BaseVerboseHTTPException):
     """Base server verbose error."""
 
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    status_code = 500
     code = "server_error"
     type_ = "server_error"
     message = "Unexpected server error was found."

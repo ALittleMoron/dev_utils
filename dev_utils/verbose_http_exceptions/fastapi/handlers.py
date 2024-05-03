@@ -7,16 +7,16 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 
 from dev_utils.core.guards import all_dict_keys_are_str
-from dev_utils.fastapi.verbose_http_exceptions.constants import ERROR_MAPPING
-from dev_utils.fastapi.verbose_http_exceptions.exc import (
+from dev_utils.verbose_http_exceptions.constants import ERROR_MAPPING
+from dev_utils.verbose_http_exceptions.exc import (
     BaseVerboseHTTPException,
     NestedErrorsMainHTTPException,
     RequestValidationVerboseHTTPException,
 )
-from dev_utils.fastapi.verbose_http_exceptions.openapi_override import (
+from dev_utils.verbose_http_exceptions.fastapi.openapi_override import (
     override_422_error,
 )
-from dev_utils.fastapi.verbose_http_exceptions.utils import validation_error_from_error_dict
+from dev_utils.verbose_http_exceptions.fastapi.utils import validation_error_from_error_dict
 
 if TYPE_CHECKING:
     from fastapi import Request
@@ -66,8 +66,6 @@ async def any_http_exception_handler(
 
     Doesn't handle 422 request error. Use ``verbose_request_validation_error_handler`` for it.
     """
-    if isinstance(exc, BaseVerboseHTTPException):
-        return JSONResponse(status_code=exc.status_code, content=exc.as_dict(), headers=exc.headers)
     content = ERROR_MAPPING[exc.status_code // 100]
     content["message"] = exc.detail
     return JSONResponse(
@@ -92,6 +90,11 @@ def apply_all_handlers(app: FastAPI, *, override_422_openapi: bool = True) -> Fa
     not apply ``verbose_http_exception_handler`` because BaseVerboseHTTPException is handled by
     any_http_exception_handler.
     """
+    app.add_exception_handler(
+        BaseVerboseHTTPException,
+        verbose_http_exception_handler,  # type: ignore
+    )
+
     app.add_exception_handler(
         HTTPException,
         any_http_exception_handler,  # type: ignore

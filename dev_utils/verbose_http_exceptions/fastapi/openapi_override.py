@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
-from dev_utils.fastapi.verbose_http_exceptions.constants import (
+from dev_utils.verbose_http_exceptions.constants import (
     BASE_VERBOSE_HTTP_VALIDATION_ERROR,
     VERBOSE_HTTP_VALIDATION_ERROR,
 )

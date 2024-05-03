@@ -3,7 +3,7 @@ from string import Template
 import pytest
 
 from dev_utils.core.utils import get_object_class_absolute_name
-from dev_utils.fastapi.verbose_http_exceptions import exc as base_http_exceptions
+from dev_utils.verbose_http_exceptions import exc as base_http_exceptions
 
 attr = "attr"
 loc = "loc"

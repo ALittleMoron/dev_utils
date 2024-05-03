@@ -151,16 +151,21 @@ This is the list of operators that can be used:
 - `regex`
 - `iregex`
 
-## FastAPI Verbose HTTP exceptions
+## Verbose HTTP exceptions
 
 Verbose exceptions with single format. This utils was inspired by
-[drf-exceptions-hog](https://github.com/PostHog/drf-exceptions-hog), but implemented for FastAPI.
+[drf-exceptions-hog](https://github.com/PostHog/drf-exceptions-hog), but implemented for other
+Web-frameworks.
+
+Now only FastAPI extension is implemented.
+
+### FastAPI implementation
 
 To work with this util you must add exception handlers in your FastAPI project like this:
 
 ```python
 from fastapi import FastAPI
-from dev_utils.fastapi.verbose_http_exceptions.handlers import (
+from dev_utils.verbose_http_exceptions.fastapi.handlers import (
     apply_verbose_http_exception_handler,
     apply_all_handlers,
 )
