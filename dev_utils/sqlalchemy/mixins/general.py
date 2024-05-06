@@ -60,7 +60,7 @@ class DifferenceMixin(BaseModelMixin):
     It will not override double underscore methods like __eq__ or other to avoid Incorrect behavior.
     """
 
-    safe_difference_flag: ClassVar[bool] = False
+    __safe_difference__: ClassVar[bool] = False
 
     def _is_dict_different_from(
         self,
@@ -72,7 +72,7 @@ class DifferenceMixin(BaseModelMixin):
         Raises
         ------
         AttributeError
-            throw, if there is no attribute in self instance and ``safe_difference_flag``
+            throw, if there is no attribute in self instance and ``__safe_difference__``
             is not set.
         """
         unloaded_fields = get_unloaded_fields(self)  # type: ignore
@@ -82,14 +82,14 @@ class DifferenceMixin(BaseModelMixin):
             if field in unloaded_fields:
                 cls_path = get_object_class_absolute_name(self)
                 msg = f'Field "{field}" is not loaded in {cls_path} instance.'
-                if self.safe_difference_flag:
+                if self.__safe_difference__:
                     logger.warning(msg)
                     return True
                 raise AttributeError(msg)
             elif not hasattr(self, field):
                 cls_path = get_object_class_absolute_name(self)
                 msg = f'Field "{field}" is not present in {cls_path} instance. It may be unloaded.'
-                if self.safe_difference_flag:
+                if self.__safe_difference__:
                     logger.warning(msg)
                     return True
                 raise AttributeError(msg)
@@ -108,7 +108,7 @@ class DifferenceMixin(BaseModelMixin):
         Raises
         ------
         AttributeError
-            throw, if there is no attribute in self instance and ``safe_difference_flag``
+            throw, if there is no attribute in self instance and ``__safe_difference__``
             is not set.
         """
         item_dict = get_model_instance_data_as_dict(item)
@@ -127,7 +127,7 @@ class DifferenceMixin(BaseModelMixin):
             throw, if ``item`` param has unsupported type (now only dict and DeclarativeBase
             are supported).
         AttributeError
-            throw, if there is no attribute in self instance and ``safe_difference_flag``
+            throw, if there is no attribute in self instance and ``__safe_difference__``
             is not set.
         """
         self._sa_model_class  # noqa: B018
@@ -137,7 +137,7 @@ class DifferenceMixin(BaseModelMixin):
             return self._is_dict_different_from(item, exclude)
         elif self.__class__ == item.__class__:  # type: ignore
             return self._is_model_different_from(item, exclude)
-        if self.safe_difference_flag:
+        if self.__safe_difference__:
             return True
         msg = f"Incorrect item. Ожидались: Dict, {self.__class__.__name__}. Got: {type(item)}."
         raise TypeError(msg)
@@ -147,9 +147,9 @@ class DifferenceMixin(BaseModelMixin):
 class BetterReprMixin(BaseModelMixin):
     """Mixin with better __repr__ method for SQLAlchemy model instances."""
 
-    use_full_class_path: ClassVar[bool] = False
-    max_repr_elements: ClassVar[int | None] = None
-    repr_include_fields: ClassVar[set[str] | None] = None
+    __use_full_class_path__: ClassVar[bool] = False
+    __max_repr_elements__: ClassVar[int | None] = None
+    __repr_include_fields__: ClassVar[set[str] | None] = None
 
     def __repr__(self) -> str:  # noqa: D105
         fields = get_valid_field_names(self._sa_model_class, only_columns=True)
@@ -164,13 +164,13 @@ class BetterReprMixin(BaseModelMixin):
         for col in fields:
             if col in unloaded:  # type: ignore
                 values_pairs_list.append(f"{col}=<Not loaded>")
-            elif self.repr_include_fields is None or col in self.repr_include_fields:
+            elif self.__repr_include_fields__ is None or col in self.__repr_include_fields__:
                 values_pairs_list.append(f"{col}={repr(getattr(self, col))}")
-        if self.max_repr_elements is not None:
-            values_pairs_list = values_pairs_list[: self.max_repr_elements]
+        if self.__max_repr_elements__ is not None:
+            values_pairs_list = values_pairs_list[: self.__max_repr_elements__]
         class_name = (
             get_object_class_absolute_name(self)
-            if self.use_full_class_path
+            if self.__use_full_class_path__
             else self.__class__.__name__
         )
         values_pairs = ", ".join(values_pairs_list)

@@ -65,7 +65,7 @@ def test_dict_convert() -> None:
 
 
 def test_difference() -> None:
-    DifferenceModel.safe_difference_flag = True
+    DifferenceModel.__safe_difference__ = True
     instance = DifferenceModel(id=1, some_other_attr="bib")
     same = DifferenceModel(id=1, some_other_attr="bib")
     different = DifferenceModel(id=2, some_other_attr="bob")
@@ -87,7 +87,7 @@ def test_difference() -> None:
         is False
     )
     assert instance.is_different_from(other) is True
-    DifferenceModel.safe_difference_flag = False
+    DifferenceModel.__safe_difference__ = False
 
 
 @pytest.mark.asyncio()
@@ -104,14 +104,14 @@ async def test_difference_with_unloaded_fields(
         other_name=orig_value.other_name + "abc",
     )
     db_async_session.expire(orig_value)
-    MyModel.safe_difference_flag = True
+    MyModel.__safe_difference__ = True
     selected_with_unload = await db_async_session.scalar(
         select(MyModel).options(load_only(MyModel.id)),
     )
     assert selected_with_unload is not None, "selected MyModel not found (but must be in DB)"
     assert selected_with_unload.is_different_from({"name": "abc"}) is True
     assert selected_with_unload.is_different_from(my_model_instance) is True
-    MyModel.safe_difference_flag = False
+    MyModel.__safe_difference__ = False
 
 
 @pytest.mark.asyncio()
@@ -120,7 +120,7 @@ async def test_difference_with_unloaded_fields_unsafe(
     mymodel_async_factory: "AsyncFactoryFunctionProtocol[MyModel]",
 ) -> None:
     await mymodel_async_factory(db_async_session)
-    MyModel.safe_difference_flag = False
+    MyModel.__safe_difference__ = False
     selected_with_unload = await db_async_session.scalar(
         select(MyModel).options(load_only(MyModel.id)),
     )
@@ -159,7 +159,7 @@ def test_full_class_path_in_repr() -> None:
     ):
         __tablename__ = "other_table_with_good_repr"
 
-        use_full_class_path = True
+        __use_full_class_path__ = True
 
         some_other_attr: Mapped[str]
 
@@ -178,8 +178,7 @@ def test_repr_include_fields() -> None:
         Base,
     ):
         __tablename__ = "other_other_table_with_good_repr"
-
-        repr_include_fields = {"id"}
+        __repr_include_fields__ = {"id"}
 
         some_other_attr: Mapped[str]
 
@@ -196,7 +195,7 @@ def test_max_repr_elements() -> None:
     ):
         __tablename__ = "max_repr_other_table_with_good_repr"
 
-        max_repr_elements = 1
+        __max_repr_elements__ = 1
 
         some_other_attr: Mapped[str]
 
@@ -212,7 +211,7 @@ async def test_unload_fields_in_repr(
 ) -> None:
     orig_value = await mymodel_async_factory(db_async_session)
     db_async_session.expire(orig_value)
-    MyModel.safe_difference_flag = True
+    MyModel.__safe_difference__ = True
     selected_with_unload = await db_async_session.scalar(
         select(MyModel).options(load_only(MyModel.id)),
     )
