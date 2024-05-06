@@ -94,7 +94,6 @@ def apply_all_handlers(app: FastAPI, *, override_422_openapi: bool = True) -> Fa
         BaseVerboseHTTPException,
         verbose_http_exception_handler,  # type: ignore
     )
-
     app.add_exception_handler(
         HTTPException,
         any_http_exception_handler,  # type: ignore
