@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 
 from dev_utils.verbose_http_exceptions.exc import RequestValidationVerboseHTTPException
-from dev_utils.verbose_http_exceptions.fastapi import utils as verbose_http_exceptions_utils
+from dev_utils.verbose_http_exceptions.ext.fastapi import utils as verbose_http_exceptions_utils
 
 
 @pytest.mark.parametrize(

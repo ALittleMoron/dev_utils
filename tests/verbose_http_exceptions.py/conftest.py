@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from dev_utils.verbose_http_exceptions.exc import ServerErrorVerboseHTTPException
-from dev_utils.verbose_http_exceptions.fastapi.handlers import (
+from dev_utils.verbose_http_exceptions.ext.fastapi.handlers import (
     apply_all_handlers,
     apply_verbose_http_exception_handler,
 )

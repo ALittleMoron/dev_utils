@@ -9,7 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy_utils import create_database, database_exists, drop_database  # type: ignore
 
-from dev_utils.sqlalchemy.mixins.general import BetterReprMixin, DifferenceMixin
+from dev_utils.sqlalchemy.mixins.general import BetterReprMixin, DictConverterMixin, DifferenceMixin
 from dev_utils.sqlalchemy.types.datetime import UTCDateTime
 from dev_utils.sqlalchemy.types.pydantic import PydanticType
 
@@ -199,7 +199,7 @@ class Base(DeclarativeBase):  # noqa
     pass
 
 
-class MyModel(BetterReprMixin, DifferenceMixin, Base):  # noqa
+class MyModel(BetterReprMixin, DictConverterMixin, DifferenceMixin, Base):  # noqa
     __tablename__ = "my_model"
 
     id: Mapped[int] = mapped_column(primary_key=True)  # noqa

@@ -13,10 +13,10 @@ from dev_utils.verbose_http_exceptions.exc import (
     NestedErrorsMainHTTPException,
     RequestValidationVerboseHTTPException,
 )
-from dev_utils.verbose_http_exceptions.fastapi.openapi_override import (
+from dev_utils.verbose_http_exceptions.ext.fastapi.openapi_override import (
     override_422_error,
 )
-from dev_utils.verbose_http_exceptions.fastapi.utils import validation_error_from_error_dict
+from dev_utils.verbose_http_exceptions.ext.fastapi.utils import validation_error_from_error_dict
 
 if TYPE_CHECKING:
     from fastapi import Request
