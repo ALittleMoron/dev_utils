@@ -2,6 +2,7 @@ import datetime
 import random
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
 from sqlalchemy import ForeignKey, inspect
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,6 +13,7 @@ from sqlalchemy_utils import create_database, database_exists, drop_database  # 
 from dev_utils.sqlalchemy.mixins.general import BetterReprMixin, DictConverterMixin, DifferenceMixin
 from dev_utils.sqlalchemy.types.datetime import UTCDateTime
 from dev_utils.sqlalchemy.types.pydantic import PydanticType
+from dev_utils.sqlalchemy.types.relativedelta import RelativeInterval
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -247,3 +249,4 @@ class TableWithUTCDT(Base):  # noqa: D101
     pydantic_list_type: Mapped[list[PydanticTestSchema] | None] = mapped_column(
         PydanticType(list[PydanticTestSchema]),
     )
+    relative_interval: Mapped[relativedelta | None] = mapped_column(RelativeInterval)

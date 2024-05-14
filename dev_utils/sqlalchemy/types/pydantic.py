@@ -9,7 +9,7 @@ from sqlalchemy.types import JSON as JSON_TYPE
 from sqlalchemy.types import TypeDecorator
 
 if TYPE_CHECKING:
-    from sqlalchemy import Dialect
+    from sqlalchemy.engine.interfaces import Dialect
 
 pydantic_version = tuple(map(int, version_short().split(".")))
 T = TypeVar("T", BaseModel, list[BaseModel], tuple[BaseModel, ...])
@@ -41,6 +41,7 @@ class PydanticType(TypeDecorator[T]):
     """Type decorator for JSON field as pydantic model."""
 
     impl = JSON_TYPE
+    cache_ok = True
 
     def __init__(self, pydantic_type: type[T]) -> None:
         super().__init__()

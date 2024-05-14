@@ -9,7 +9,7 @@ from sqlalchemy.ext.compiler import compiles  # type: ignore
 from sqlalchemy.sql import expression
 
 if TYPE_CHECKING:
-    from sqlalchemy import Dialect
+    from sqlalchemy.engine.interfaces import Dialect
 
 
 UTC = zoneinfo.ZoneInfo("UTC")

@@ -2,6 +2,7 @@ import datetime
 from typing import TYPE_CHECKING, Any
 
 import pytest
+from dateutil.relativedelta import relativedelta
 from mimesis import Datetime
 from pydantic import BaseModel
 from sqlalchemy.exc import StatementError
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from tests.types import SyncFactoryFunctionProtocol
 
 
-class OtherPydanticTestSchema(BaseModel):
+class OtherPydanticTestSchema(BaseModel):  # noqa: D101
     a: int
     b: int
     c: int
@@ -159,3 +160,66 @@ def test_pydantic_list_field_other_schema(
 ) -> None:
     with pytest.raises(StatementError):
         table_create(db_sync_session, pydantic_type=schema, commit=True)
+
+
+@pytest.mark.parametrize(
+    ("interval", "expected_value"),
+    [
+        (None, None),
+        (datetime.timedelta(days=25), relativedelta(days=25)),
+        (datetime.timedelta(days=25, seconds=100), relativedelta(days=25, seconds=100)),
+        (
+            datetime.timedelta(days=25, seconds=100, microseconds=100),
+            relativedelta(days=25, seconds=100, microseconds=100),
+        ),
+        (relativedelta(days=25), relativedelta(days=25)),
+        (relativedelta(days=25, seconds=100), relativedelta(days=25, seconds=100)),
+        (
+            relativedelta(days=25, seconds=100, microseconds=100),
+            relativedelta(days=25, seconds=100, microseconds=100),
+        ),
+        (
+            relativedelta(years=10, days=25, seconds=100, microseconds=100),
+            relativedelta(years=10, days=25, seconds=100, microseconds=100),
+        ),
+        (
+            relativedelta(years=10, months=10, days=25, seconds=100, microseconds=100),
+            relativedelta(years=10, months=10, days=25, seconds=100, microseconds=100),
+        ),
+        (
+            relativedelta(years=10, months=10, weeks=10, days=25, seconds=100, microseconds=100),
+            relativedelta(years=10, months=10, weeks=10, days=25, seconds=100, microseconds=100),
+        ),
+        (
+            relativedelta(
+                years=10,
+                months=10,
+                weeks=10,
+                days=25,
+                hours=10,
+                seconds=100,
+                microseconds=100,
+            ),
+            relativedelta(
+                years=10,
+                months=10,
+                weeks=10,
+                days=25,
+                hours=10,
+                seconds=100,
+                microseconds=100,
+            ),
+        ),
+    ],
+)
+def test_relative_interval(
+    interval: Any,  # noqa: ANN401
+    expected_value: Any,  # noqa: ANN401
+    db_sync_session: "Session",
+    table_create: "SyncFactoryFunctionProtocol[TableWithUTCDT]",
+) -> None:
+    item = table_create(db_sync_session, relative_interval=interval, commit=True)
+    db_sync_session.refresh(item)
+    if expected_value is not None:
+        assert isinstance(item.relative_interval, relativedelta)
+    assert item.relative_interval == expected_value

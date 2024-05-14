@@ -156,7 +156,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "1.9.0"
+version = "1.10.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"
@@ -165,10 +165,11 @@ license = { text = "MIT" }
 dependencies = []
 
 [project.optional-dependencies]
-profiling = ["fastapi", "sqlalchemy>=2.0.28"]
-sqlalchemy_filters = ["sqlalchemy>=2.0.28"]
+profiling = ["fastapi", "sqlalchemy>=2.0"]
+sqlalchemy_filters = ["sqlalchemy>=2.0"]
 extract_openapi = ["fastapi", "uvicorn"]
 migration_numbering = ["alembic"]
+relativedelta_type = ["python-dateutil", "sqlalchemy>=2.0"]
 
 [build-system]
 requires = ["pdm-backend"]
