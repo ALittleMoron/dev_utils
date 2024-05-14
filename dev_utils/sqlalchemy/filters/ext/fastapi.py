@@ -28,33 +28,32 @@ if TYPE_CHECKING:
 
 class AdvancedFilterSchema(BaseModel):  # noqa: D101
     field: str = Field(
-        title="Поле фильтра",
+        title="Filter field",
         description=(
-            "Поле модели для фильтрации. Будьте осторожны! Если такого поля нет в базе данных, "
-            "или оно не разрешено для фильтрации, будет выдана ошибка."
+            "Model field to filter. Be careful! if there is no field in model or it not allowed "
+            "to filter by, the error wil be raised."
         ),
         examples=["id", "name"],
     )
     value: Any = Field(
-        title="Значение фильтра",
+        title="Filter value",
         description=(
-            "Значение модели для фильтрации. Должно соответствовать типу, хранимому в базе данных."
+            "Value to filter by. Must be instance of type, that stores in db in given field."
         ),
         examples=["id", "name"],
     )
     operator: AdvancedOperatorsLiteral = Field(
         default="=",
-        title="Оператор фильтра",
+        title="Filter operator",
         description=(
-            "Оператор фильтрации для поля и значения. Выбирается из заранее заготовленных "
-            "элементов."
+            "Filter operator for given field and value. Choose it from enumerated values."
         ),
         examples=["=", ">"],
     )
 
 
 def _convert_key_value_filters(filters: Any) -> list[dict[str, Any]]:  # noqa: ANN401
-    """Проверяет переданные фильтры на то, что они являются словарями."""
+    """Check for dictionary or raise HTTPEXception error."""
     values_to_filter = [filters] if not isinstance(filters, list) else filters  # type: ignore
     errors: list[dict[str, Any]] = []
     for idx, _filter in enumerate(values_to_filter):  # type: ignore
@@ -79,17 +78,14 @@ def _convert_key_value_filters(filters: Any) -> list[dict[str, Any]]:  # noqa: A
 def get_advanced_filters(
     filters: Json[Any] | None = Query(
         None,
-        title='Фильтры',
+        title='Filters',
         description=(
-            'Фильтры в формате: '
+            'Filters with following format: '
             '``[{"field": "field_name", "value": anyValue, "operator": "operator"}]``.'
         ),
     ),
 ) -> list[AdvancedFilterSchema]:
-    """Зависимость, обрабатывающая перевод фильтров из JSON в схему pydantic.
-
-    Гарантирует то, что в параметрах были переданы валидные фильтры.
-    """
+    """Depends, converts filters from JSON to pydantic schema."""
     res: list[AdvancedFilterSchema] = []
     try:
         if isinstance(filters, list):
@@ -108,18 +104,14 @@ def get_advanced_filters(
 def get_simple_filters(
     filters: Json[Any] | None = Query(
         None,
-        title='Фильтры',
+        title='Filters',
         description=(
-            'Фильтры в формате ``{Ключ: значение}``, где ``Ключ`` - поле, по которому нужно '
-            'профильтровать, а ``Значение`` - значение для фильтрации по этому полю. Пример: '
-            '``{"id": 25, "name": "name"}``.'
+            'Filters with ``{Key: Value}`` format, where ``Key`` - field of model to filter by '
+            '``Value`` - value to filter by. Example: ``{"id": 25, "name": "name"}``.'
         ),
     ),
 ) -> list[dict[str, Any]]:
-    """Зависимость, обрабатывающая проверку переданных фильтров на то, что они являются валидными.
-
-    Гарантирует то, что в параметрах были переданы валидные фильтры - словарь или список словарей.
-    """
+    """Depends, that validate given JSON as dict with str keys."""
     return _convert_key_value_filters(filters)
 
 
@@ -128,38 +120,29 @@ def get_django_filters(
         None,
         title='Фильтры',
         description=(
-            'Фильтры в формате ``{Ключ: значение}``, где ``Ключ`` - поле, по которому нужно '
-            'профильтровать, а ``Значение`` - значение для фильтрации по этому полю. Пример: '
+            'Filters with ``{Key: Value}`` format, where ``Key`` - field of model to filter by '
+            '``Value`` - value to filter by. Example: '
             '``{"id__exact": 25, "datetime_field__year__exact": 1995}``.\n\n'
-            '``Внимание!`` Фильтры на данный момент не работают с под-запросами к другим моделям '
-            '(и скорее всего, в целях безопасности не будут работать, потому что это небезопасно).'
+            '``Attention!`` Django filters in current state does not support sub-lookups to '
+            'related models and will not support because of security issues.'
         ),
     ),
 ) -> list[dict[str, Any]]:
-    """Зависимость, обрабатывающая проверку переданных фильтров на то, что они являются валидными.
-
-    Гарантирует то, что в параметрах были переданы валидные фильтры - словарь или список словарей.
-    """
+    """Depends, that validate given JSON as dict with str keys."""
     return _convert_key_value_filters(filters)
 
 
 def get_advanced_filter_dicts(
     filters: list[AdvancedFilterSchema] = Depends(get_advanced_filters),
 ) -> list[dict[str, Any]]:
-    """Зависимость, обрабатывающая перевод схем фильтров в словари.
-
-    Нужно для использования
-    """
+    """Depends, converts filters from pydantic to dicts."""
     return [_filter.model_dump() for _filter in filters]
 
 
 def advanced_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFiltersDepends":
-    """Фабрика зависимости для конвертации при помощи продвинутых фильтров для переданной модели.
+    """Dependency fabric for advanced filters convert.
 
-    Для использования нужно вызвать функцию и передать результат этой функции в ``Depends``.
-
-    Примеры
-    -------
+    You need to call this function and pass result in ``Depends`` like this:
 
     ```
     from typing import Sequence
@@ -188,12 +171,9 @@ def advanced_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFilters
 
 
 def simple_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFiltersDepends":
-    """Фабрика зависимости для конвертации при помощи простых фильтров для переданной модели.
+    """Dependency fabric for simple filters convert.
 
-    Для использования нужно вызвать функцию и передать результат этой функции в ``Depends``.
-
-    Примеры
-    -------
+    You need to call this function and pass result in ``Depends`` like this:
 
     ```
     from typing import Sequence
@@ -222,12 +202,9 @@ def simple_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFiltersDe
 
 
 def django_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFiltersDepends":
-    """Фабрика зависимости для конвертации при помощи django-фильтров для переданной модели.
+    """Dependency fabric for django filters convert.
 
-    Для использования нужно вызвать функцию и передать результат этой функции в ``Depends``.
-
-    Примеры
-    -------
+    You need to call this function and pass result in ``Depends`` like this:
 
     ```
     from typing import Sequence

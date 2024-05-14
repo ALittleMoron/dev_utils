@@ -139,7 +139,7 @@ class DifferenceMixin(BaseModelMixin):
             return self._is_model_different_from(item, exclude)
         if self.__safe_difference__:
             return True
-        msg = f"Incorrect item. Ожидались: Dict, {self.__class__.__name__}. Got: {type(item)}."
+        msg = f"Incorrect item. Expected: Dict or {self.__class__.__name__}. Got: {type(item)}."
         raise TypeError(msg)
 
 

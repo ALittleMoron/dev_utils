@@ -156,7 +156,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "1.10.0"
+version = "1.11.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"

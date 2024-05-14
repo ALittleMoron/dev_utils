@@ -89,7 +89,7 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
     nested_errors: list["BaseVerboseHTTPException"] | None = None
 
     def __init__(  # noqa: D105
-        self: Self,
+        self,
         *nested_errors: "BaseVerboseHTTPException",
         status_code: int | None = None,
         code: str | None = None,
@@ -123,14 +123,14 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
             self.nested_errors = list(nested_errors)
         self.headers = headers
 
-    def _get_attribute(self: Self, name: str) -> Any:  # noqa: ANN401  # pragma: no coverage
+    def _get_attribute(self, name: str) -> Any:  # noqa: ANN401  # pragma: no coverage
         """Safe getattr for verbose http exceptions."""
         try:
             return repr(getattr(self, name))
         except (AttributeError, TypeError):
             return ABSTRACT_PROPERTY_DEFAULT_VALUE
 
-    def __repr__(self: Self) -> str:  # noqa: D105
+    def __repr__(self) -> str:  # noqa: D105
         cls_path = get_object_class_absolute_name(self.__class__)
         attrs = (
             f'status_code={self.status_code}, code={self._get_attribute("code")}, '
@@ -139,14 +139,14 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
         )
         return f"{cls_path}({attrs})"
 
-    def __str__(self: Self) -> str:  # noqa: D105  # pragma: no coverage
+    def __str__(self) -> str:  # noqa: D105  # pragma: no coverage
         try:
             return self.message
         except (AttributeError, TypeError):
             return ABSTRACT_CLS_DEFAULT_VALUE
 
     def from_template(
-        self: Self,
+        self,
         **mapping: object,
     ) -> Self:
         """Fill message with template and return self.
@@ -176,8 +176,8 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
             self.message = self.template.format(**mapping)
         return self
 
-    def with_attr(self: Self, attr_name: str) -> Self:
-        """Добавляет поле атрибута в класс исключения.
+    def with_attr(self, attr_name: str) -> Self:
+        """Add attribute of the error.
 
         Usage:
         ```
@@ -198,8 +198,8 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
         self.attr = attr_name
         return self
 
-    def with_location(self: Self, location: str) -> Self:
-        """Добавляет поле расположения в класс исключения.
+    def with_location(self, location: str) -> Self:
+        """Add location of the error.
 
         Usage:
         ```
@@ -221,10 +221,10 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
         return self
 
     def with_nested_errors(
-        self: Self,
+        self,
         nested_errors: Sequence["BaseVerboseHTTPException"],
     ) -> Self:
-        """Convert Exception instance into dict.
+        """Add nested errors to parent (self) error.
 
         Usage:
         ```
@@ -251,7 +251,7 @@ class BaseVerboseHTTPException(Abstract, Exception):  # noqa: N818
         return self
 
     def as_dict(
-        self: Self,
+        self,
         attr_name: str | None = None,
         location: str | None = None,
         nested_errors: Sequence["BaseVerboseHTTPException"] | None = None,

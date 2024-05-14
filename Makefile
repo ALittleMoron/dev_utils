@@ -5,18 +5,18 @@ PDM := $(shell command -v pdm 2> /dev/null)
 
 .PHONY: help
 help:
-	@echo -e "Пожалуйста, испольйте \033[0;33m'make <target>'\033[0m где <target> одна из команд:"
+	@echo -e "Please, use \033[0;33m'make <target>'\033[0m where <target> is one the following commands:"
 	@echo ""
-	@echo -e "  \033[0;33minstall\033[0m         запускает установку пакеты и подготовку окружение"
-	@echo -e "  \033[0;33mshell\033[0m           запускает ipython оболочку"
-	@echo -e "  \033[0;33mclean\033[0m           запускает удаление всех временных файлов"
-	@echo -e "  \033[0;33mlint\033[0m            запускает проверку кода"
-	@echo -e "  \033[0;33mformat\033[0m          запускает форматирование кода"
-	@echo -e "  \033[0;33mtest\033[0m            запускает все тесты проекта"
-	@echo -e "  \033[0;33mtest_docker\033[0m     запускает все тесты проекта в докере"
+	@echo -e "  \033[0;33minstall\033[0m         run installation for all dependencies"
+	@echo -e "  \033[0;33mshell\033[0m           run ipython shell"
+	@echo -e "  \033[0;33mclean\033[0m           run delete all not needed files"
+	@echo -e "  \033[0;33mlint\033[0m            run project code checking without formatting"
+	@echo -e "  \033[0;33mformat\033[0m          run project code formatting"
+	@echo -e "  \033[0;33mtest\033[0m            run all tests"
+	@echo -e "  \033[0;33mtest_docker\033[0m     run all tests in docker"
 
 	@echo ""
-	@echo -e "Проверьте \033[0;33mMakefile\033[0m, чтобы понимать, что какая команда делает конкретно."
+	@echo -e "Check \033[0;33mMakefile\033[0m to get full context of commands."
 
 
 .PHONY: install
@@ -35,7 +35,6 @@ shell:
 .PHONY: clean
 clean:
 	find . -type d -name "__pycache__" | xargs rm -rf {};
-	rm -rf ./logs/*
 
 .PHONY: lint
 lint:
