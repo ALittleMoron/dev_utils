@@ -1,19 +1,14 @@
 """Mixin module with audit columns of model (created_at, updated_at)."""
 
 import datetime
-from typing import TYPE_CHECKING
 
-from sqlalchemy import Cast, Date, Time, cast, event
+from sqlalchemy import Cast, Date, Time, cast
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm.decl_api import declarative_mixin, declared_attr
 
-from dev_utils.core.utils import get_utc_now
 from dev_utils.sqlalchemy.mixins.base import BaseModelMixin
 from dev_utils.sqlalchemy.types.datetime import UTCDateTime, Utcnow
-
-if TYPE_CHECKING:
-    from sqlalchemy.engine import Connection
 
 
 @declarative_mixin
@@ -99,23 +94,40 @@ class AuditMixin(CreatedAtAuditMixin, UpdatedAtAuditMixin):
     """Full audit mixin with created_at and updated_at columns."""
 
 
-def add_audit_column_populate_event() -> None:
-    """Add event for audit columns to populate updated_at and ."""
+## triggers
 
-    def _update_created_at_on_create_listener(
-        mapper: Mapped[CreatedAtAuditMixin],  # noqa
-        connection: "Connection",  # noqa
-        target: CreatedAtAuditMixin,
-    ) -> None:
-        target.created_at = get_utc_now()
 
-    def _update_updated_at_on_update_listener(
-        mapper: Mapped[UpdatedAtAuditMixin],  # noqa
-        connection: "Connection",  # noqa
-        target: UpdatedAtAuditMixin,
-    ) -> None:
-        target.updated_at = get_utc_now()
+def get_updated_at_ddl_statement(  # pragma: no coverage
+    column_name: str = "updated_at",
+) -> str:
+    """Get updated_at DDL statement."""
+    return f"""\
+    CREATE OR REPLACE FUNCTION set_updated_at_timestamp()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.{column_name} = NOW() AT TIME ZONE 'utc';
+      RETURN NEW;
+    END;
+    $$ LANGUAGE 'plpgsql';"""
 
-    # TODO: test all cases: insert, update, session.add (maybe, in some cases it will work bad).
-    event.listen(UpdatedAtAuditMixin, 'before_update', _update_updated_at_on_update_listener)
-    event.listen(CreatedAtAuditMixin, 'before_insert', _update_created_at_on_create_listener)
+
+def get_updated_at_trigger_name(  # pragma: no coverage
+    table_name: str,
+    column_name: str = "updated_at",
+) -> str:
+    """Get updated_at trigger name."""
+    return f'trigger__updated_at_{table_name}_{column_name}'
+
+
+def get_updated_at_trigger_query(  # pragma: no coverage
+    table_name: str,
+    column_name: str = "updated_at",
+) -> str:
+    """Get updated_at trigger query to make trigger in alembic."""
+    trigger_name = get_updated_at_trigger_name(table_name, column_name)
+    return f"""\
+    CREATE TRIGGER {trigger_name}
+      BEFORE UPDATE
+      ON {table_name}
+      FOR EACH ROW
+      EXECUTE PROCEDURE set_updated_at_timestamp();"""
