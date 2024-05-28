@@ -1,6 +1,7 @@
 """Mixin module with audit columns of model (created_at, updated_at)."""
 
 import datetime
+from functools import partial
 
 from sqlalchemy import Cast, Date, Time, cast
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -18,7 +19,11 @@ class CreatedAtAuditMixin(BaseModelMixin):
     @declared_attr
     def created_at(cls) -> Mapped[datetime.datetime]:
         """Audit created_at column."""
-        return mapped_column(UTCDateTime, server_default=Utcnow())
+        return mapped_column(
+            UTCDateTime,
+            default=partial(datetime.datetime.now, tz=datetime.UTC),
+            server_default=Utcnow(),
+        )
 
     @hybrid_property
     def created_at_date(self) -> "datetime.date":  # type: ignore
@@ -57,6 +62,8 @@ class UpdatedAtAuditMixin(BaseModelMixin):
         """Audit created_at column."""
         return mapped_column(
             UTCDateTime,
+            default=partial(datetime.datetime.now, tz=datetime.UTC),
+            onupdate=partial(datetime.datetime.now, tz=datetime.UTC),
             server_default=Utcnow(),
             server_onupdate=Utcnow(),  # type: ignore
         )
