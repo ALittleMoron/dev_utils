@@ -138,3 +138,12 @@ def get_updated_at_trigger_query(  # pragma: no coverage
       ON {table_name}
       FOR EACH ROW
       EXECUTE PROCEDURE set_updated_at_timestamp();"""
+
+
+def get_drop_update_at_trigger_query(  # pragma: no coverage
+    table_name: str,
+    column_name: str = "updated_at",
+) -> str:
+    """Get drop update_at trigger query to make trigger in alembic."""
+    trigger_name = get_updated_at_trigger_name(table_name, column_name)
+    return f"DROP TRIGGER IF EXISTS {trigger_name} on {table_name};"
