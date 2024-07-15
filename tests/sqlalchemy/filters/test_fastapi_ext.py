@@ -8,6 +8,7 @@ from sqlalchemy import ColumnElement, select
 
 from dev_utils.sqlalchemy.filters.ext.fastapi import (
     AdvancedFilterSchema,
+    _convert_key_value_filters,  # type: ignore
     advanced_converter_depends,
     django_converter_depends,
     get_advanced_filter_dicts,
@@ -90,6 +91,9 @@ def test_get_advanced_filters(
         {"field": "id", "value": 1, "operator": "="},
         {"field": "name", "value": "name", "operator": "="},
     ]
+    response = app.get("/x")
+    assert response.status_code == 200, response.json()
+    assert response.json() == []
 
 
 def test_test_get_advanced_filters_validation_error(
@@ -280,3 +284,7 @@ def test_django_converter_depends(
     for ele in response_list:  # type: ignore
         assert 'id' in ele
         assert ele['id'] in ids
+
+
+def test_convert_key_value_filters_is_none() -> None:
+    assert _convert_key_value_filters(None) == []

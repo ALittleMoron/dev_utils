@@ -54,6 +54,8 @@ class AdvancedFilterSchema(BaseModel):  # noqa: D101
 
 def _convert_key_value_filters(filters: Any) -> list[dict[str, Any]]:  # noqa: ANN401
     """Check for dictionary or raise HTTPEXception error."""
+    if filters is None:
+        return []
     values_to_filter = [filters] if not isinstance(filters, list) else filters  # type: ignore
     errors: list[dict[str, Any]] = []
     for idx, _filter in enumerate(values_to_filter):  # type: ignore
@@ -91,6 +93,8 @@ def get_advanced_filters(
         if isinstance(filters, list):
             for _filter in filters:  # type: ignore
                 res.append(AdvancedFilterSchema.model_validate(_filter))  # type: ignore
+        elif filters is None:
+            return res
         else:
             res.append(AdvancedFilterSchema.model_validate(filters))  # type: ignore
     except ValidationError as exc:
@@ -163,7 +167,7 @@ def advanced_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFilters
     """
 
     def _get_filters(
-        filters: list[dict[str, Any]] = Depends(get_advanced_filter_dicts),
+        filters: list[dict[str, Any]] | None = Depends(get_advanced_filter_dicts),
     ) -> "Sequence[ColumnElement[bool]]":
         return AdvancedOperatorFilterConverter.convert(model, filters)
 
@@ -194,7 +198,7 @@ def simple_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFiltersDe
     """
 
     def _get_filters(
-        filters: list[dict[str, Any]] = Depends(get_simple_filters),
+        filters: list[dict[str, Any]] | None = Depends(get_simple_filters),
     ) -> "Sequence[ColumnElement[bool]]":
         return SimpleFilterConverter.convert(model, filters)
 
@@ -225,7 +229,7 @@ def django_converter_depends(model: "type[DeclarativeBase]") -> "GetSQLFiltersDe
     """
 
     def _get_filters(
-        filters: list[dict[str, Any]] = Depends(get_django_filters),
+        filters: list[dict[str, Any]] | None = Depends(get_django_filters),
     ) -> "Sequence[ColumnElement[bool]]":
         return DjangoLikeFilterConverter.convert(model, filters)
 
