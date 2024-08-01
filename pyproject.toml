@@ -54,6 +54,7 @@ lint.ignore = [
     "ANN101",
     "ANN102",
     "N805",
+    "UP037",
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -156,7 +157,7 @@ dev = [
 
 [project]
 name = "python_dev_utils"
-version = "5.0.0"
+version = "6.0.0"
 description = "My project utils package, that I use in my projects."
 authors = [{ name = "Dmitriy Lunev", email = "dima.lunev14@gmail.com" }]
 requires-python = ">=3.11"

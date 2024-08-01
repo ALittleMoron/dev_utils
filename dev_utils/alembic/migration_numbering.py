@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 
 def process_revision_directives_datetime_order(
-    context: "MigrationContext",
-    revision: "RevisionType",
+    context: "MigrationContext",  # noqa: F401
+    revision: "RevisionType",  # noqa: F401
     directives: list["MigrationScript"],
 ) -> None:
     """``process_revision_directives`` function for alembic migration file naming.

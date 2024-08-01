@@ -43,7 +43,7 @@ lint:
 	$(PDM) run isort --settings-path ./pyproject.toml --check-only $(NAME)
 	$(PDM) run black --config ./pyproject.toml --check $(NAME) --diff
 	$(PDM) run ruff check $(NAME)
-	$(PDM) run vulture $(NAME) --min-confidence 100
+	$(PDM) run vulture $(NAME) --min-confidence 100 --exclude "migration_numbering.py"
 	$(PDM) run bandit --configfile ./pyproject.toml -r ./$(NAME)
 
 .PHONY: format
