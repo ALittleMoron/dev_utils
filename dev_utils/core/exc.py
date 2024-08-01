@@ -29,13 +29,6 @@ class NoModelRelationshipError(NoModelAttributeError):
     """Exception for incorrect model relationship name: relationship not found in given model."""
 
 
-# |--------------| FILTERS |--------------|
-
-
-class FilterError(BaseDevError):
-    """General filter error of incorrect work of FilterConverters."""
-
-
 # |--------------| PROFILING |--------------|
 
 
